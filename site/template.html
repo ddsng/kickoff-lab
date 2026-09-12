@@ -1,0 +1,1232 @@
+<title>Kickoff Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#f5f3f8; --surface:#ffffff; --surface-2:#faf8fc; --surface-3:#efecf4;
+  --ink:#191423; --ink-2:#4d4560; --ink-3:#7d7590;
+  --line:#e4dfec; --line-2:#d3cce0;
+  --accent:#6533c9; --accent-ink:#ffffff; --accent-soft:#efe8fd;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#e34948;
+  --d1:#cde2fb; --d2:#9ec5f4; --d3:#f0efec; --d4:#f3b4b4; --d5:#e07777; --diff-ink:#191423;
+  --shadow:0 1px 2px rgba(25,20,35,.05), 0 8px 24px -12px rgba(25,20,35,.18);
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#141020; --surface:#1c1729; --surface-2:#221c31; --surface-3:#2b2440;
+    --ink:#f4f1fa; --ink-2:#b8afcc; --ink-3:#8b81a1;
+    --line:#302846; --line-2:#3d3357;
+    --accent:#a98cff; --accent-ink:#1a1226; --accent-soft:#2a2140;
+    --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#e66767;
+    --d1:#0d366b; --d2:#184f95; --d3:#383835; --d4:#8f2b2b; --d5:#c93a3a; --diff-ink:#f4f1fa;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#141020; --surface:#1c1729; --surface-2:#221c31; --surface-3:#2b2440;
+  --ink:#f4f1fa; --ink-2:#b8afcc; --ink-3:#8b81a1;
+  --line:#302846; --line-2:#3d3357;
+  --accent:#a98cff; --accent-ink:#1a1226; --accent-soft:#2a2140;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#e66767;
+  --d1:#0d366b; --d2:#184f95; --d3:#383835; --d4:#8f2b2b; --d5:#c93a3a; --diff-ink:#f4f1fa;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Archivo", ui-sans-serif, system-ui, sans-serif; margin:0; text-wrap:balance; letter-spacing:-.02em; font-weight:700}
+.mono{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums}
+.num{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums; font-weight:500}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+
+.wrap{max-width:1380px; margin:0 auto; padding:0 20px 72px}
+
+/* ---------- header ---------- */
+header{
+  border-bottom:1px solid var(--line); background:var(--surface);
+  position:sticky; top:0; z-index:40;
+}
+.hd{max-width:1380px; margin:0 auto; padding:14px 20px; display:flex; gap:22px; align-items:center; flex-wrap:wrap}
+.brand{display:flex; align-items:baseline; gap:9px}
+.brand h1{font-size:19px; font-weight:800}
+.brand .dot{width:8px; height:8px; border-radius:50%; background:var(--accent); align-self:center}
+.brand small{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.hstats{display:flex; gap:20px; margin-left:auto; flex-wrap:wrap; align-items:center}
+.hstat{display:flex; flex-direction:column; gap:1px; min-width:0}
+.hstat .k{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3)}
+.hstat .v{font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600; font-variant-numeric:tabular-nums}
+.themebtn{background:none; border:1px solid var(--line-2); border-radius:8px; padding:6px 9px; color:var(--ink-2); line-height:1}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex; gap:2px; border-bottom:1px solid var(--line); overflow-x:auto; margin-top:16px; scrollbar-width:thin}
+nav.tabs button{
+  background:none; border:0; padding:10px 15px; color:var(--ink-3); font-weight:600; font-size:13.5px;
+  border-bottom:2px solid transparent; white-space:nowrap; border-radius:6px 6px 0 0;
+}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--accent)}
+
+/* ---------- generic ---------- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow)}
+.pad{padding:16px}
+.grid{display:grid; gap:14px}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.sect-h{display:flex; align-items:baseline; gap:10px; margin:22px 0 10px}
+.sect-h h2{font-size:16px}
+.sect-h p{margin:0; color:var(--ink-3); font-size:12.5px}
+.hint{color:var(--ink-3); font-size:12.5px; margin:0}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+
+input[type=text],input[type=number],select{
+  background:var(--surface); color:var(--ink); border:1px solid var(--line-2);
+  border-radius:8px; padding:7px 10px; font:inherit; font-size:13px;
+}
+input[type=range]{accent-color:var(--accent)}
+.btn{background:var(--surface); border:1px solid var(--line-2); border-radius:8px; padding:7px 12px; font-size:13px; font-weight:500}
+.btn:hover{background:var(--surface-3)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 9px; font-size:12px}
+.chip{border:1px solid var(--line-2); background:var(--surface-2); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+
+/* ---------- pitch ---------- */
+.squadgrid{display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:16px; align-items:start}
+@media(max-width:960px){.squadgrid{grid-template-columns:1fr}}
+.pitch{
+  border-radius:var(--r); padding:14px 12px 12px; position:relative; overflow:hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--surface)) 0%, var(--surface) 62%);
+  border:1px solid var(--line);
+}
+/* pitch markings: touchline and the penalty area behind the keeper */
+.pitch::before{
+  content:""; position:absolute; inset:9px; pointer-events:none; border-radius:6px;
+  border:1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.pitch::after{
+  content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%);
+  width:min(230px, 52%); height:66px; pointer-events:none;
+  border:1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-top:0;
+  border-radius:0 0 4px 4px;
+}
+.prow{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; position:relative; padding:7px 0}
+.pcard{
+  width:98px; background:var(--surface); border:1px solid var(--line-2); border-radius:9px;
+  padding:6px 5px 5px; text-align:center; position:relative; box-shadow:var(--shadow); cursor:pointer;
+}
+.pcard:hover{border-color:var(--accent)}
+.pcard .nm{font-weight:600; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pcard .meta{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3); display:flex; justify-content:center; gap:5px}
+.pcard .xp{font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:600; margin-top:2px}
+.pcard .tag{position:absolute; top:-6px; left:-5px; background:var(--accent); color:var(--accent-ink);
+  font-family:"IBM Plex Mono",monospace; font-size:9px; font-weight:600; padding:1px 4px; border-radius:4px}
+.pcard .flag{position:absolute; top:-6px; right:-5px; font-size:9px; font-weight:700; padding:1px 4px; border-radius:4px; color:#fff}
+.pcard.empty{border-style:dashed; color:var(--ink-3); display:flex; align-items:center; justify-content:center; height:58px; font-size:12px; box-shadow:none; background:transparent}
+.benchrow{margin-top:8px; border-top:1px dashed var(--line-2); padding-top:9px}
+.benchlbl{text-align:center; margin-bottom:4px}
+
+/* ---------- tables ---------- */
+.tblwrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+th,td{padding:7px 9px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--line)}
+th{
+  position:sticky; top:0; background:var(--surface-2); z-index:2; font-family:"IBM Plex Mono",monospace;
+  font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); font-weight:600; cursor:pointer;
+  border-bottom:1px solid var(--line-2);
+}
+th:hover{color:var(--ink)}
+th.sorted{color:var(--accent)}
+td.l,th.l{text-align:left}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr{cursor:pointer}
+.pname{font-weight:600}
+.tteam{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3)}
+.posbadge{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:600;
+  padding:1px 5px; border-radius:4px; border:1px solid var(--line-2); color:var(--ink-2)}
+.bar{height:4px; border-radius:2px; background:var(--s1); display:block}
+
+/* ---------- fixture grid ---------- */
+.fgrid{border-collapse:separate; border-spacing:2px}
+.fgrid td,.fgrid th{border:0; padding:0}
+.fcell{
+  border-radius:5px; padding:5px 3px; text-align:center; min-width:52px;
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500; line-height:1.25;
+}
+.fcell .o{font-weight:600; font-size:11px}
+.fcell .v{opacity:.75; font-size:9px}
+.fcell.blank{background:var(--surface-3); color:var(--ink-3)}
+.dgw{outline:2px solid var(--accent); outline-offset:-2px}
+.legend{display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:11.5px; color:var(--ink-2)}
+.legend i{width:22px; height:11px; border-radius:3px; display:inline-block}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed; inset:0; background:rgba(10,6,18,.45); z-index:60; opacity:0; pointer-events:none; transition:opacity .18s}
+.scrim.on{opacity:1; pointer-events:auto}
+.drawer{
+  position:fixed; top:0; right:0; height:100%; width:min(520px,100%); background:var(--surface);
+  border-left:1px solid var(--line); z-index:61; transform:translateX(100%); transition:transform .22s ease;
+  overflow-y:auto; box-shadow:-20px 0 60px -30px rgba(0,0,0,.6);
+}
+.drawer.on{transform:none}
+.dhd{position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--line); padding:16px 18px; z-index:2}
+.dbody{padding:18px}
+.kv{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px}
+.kv .b{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:8px 9px}
+.kv .b .k{font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.kv .b .v{font-family:"IBM Plex Mono",monospace; font-size:15px; font-weight:600; margin-top:1px}
+.kv .b .s{font-size:10.5px; color:var(--ink-3)}
+.stack{display:flex; height:26px; border-radius:6px; overflow:hidden; background:var(--surface-3); gap:2px}
+.stack i{display:block}
+.slegend{display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; font-size:11.5px; color:var(--ink-2)}
+.slegend span{display:flex; align-items:center; gap:5px}
+.slegend b{width:9px; height:9px; border-radius:2px; display:inline-block}
+
+/* ---------- misc ---------- */
+.alert{border-radius:8px; padding:9px 12px; font-size:12.5px; display:flex; gap:8px; align-items:flex-start; border:1px solid}
+.alert.w{background:color-mix(in srgb,var(--warn) 12%,var(--surface)); border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+.alert.c{background:color-mix(in srgb,var(--crit) 12%,var(--surface)); border-color:color-mix(in srgb,var(--crit) 40%,var(--line))}
+.up{color:var(--good); font-weight:600}
+.dn{color:var(--crit); font-weight:600}
+.searchbox{position:relative; flex:1; min-width:200px}
+.results{position:absolute; top:calc(100% + 4px); left:0; right:0; background:var(--surface); border:1px solid var(--line-2);
+  border-radius:8px; max-height:330px; overflow-y:auto; z-index:30; box-shadow:var(--shadow)}
+.results div{padding:7px 11px; display:flex; gap:8px; align-items:center; font-size:13px; cursor:pointer}
+.results div:hover,.results div.hl{background:var(--accent-soft)}
+.results .rp{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-3)}
+.sparks{display:flex; gap:2px; align-items:flex-end; height:34px}
+.sparks i{flex:1; background:var(--s1); border-radius:2px 2px 0 0; min-height:2px; display:block}
+footer{border-top:1px solid var(--line); margin-top:34px; padding:18px 0; color:var(--ink-3); font-size:12px}
+footer a{color:var(--ink-2)}
+.tabpanel[hidden]{display:none}
+</style>
+
+<header>
+  <div class="hd">
+    <div class="brand">
+      <span class="dot"></span>
+      <h1>Kickoff Lab</h1>
+      <small id="seasonlbl"></small>
+    </div>
+    <div class="hstats">
+      <div class="hstat"><span class="k">Gameweek</span><span class="v" id="hgw">–</span></div>
+      <div class="hstat"><span class="k">Deadline · <span id="hdlsub"></span></span><span class="v" id="hdl">–</span></div>
+      <div class="hstat"><span class="k">Nilai skuad</span><span class="v" id="hval">–</span></div>
+      <div class="hstat"><span class="k">Sisa bank</span><span class="v" id="hbank">–</span></div>
+      <div class="hstat"><span class="k">xP GW berikut</span><span class="v" id="hxp">–</span></div>
+      <button class="themebtn" id="themebtn" title="Ganti tema" aria-label="Ganti tema">◐</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="squad">Skuad saya</button>
+    <button role="tab" aria-selected="false" data-tab="players">Pemain</button>
+    <button role="tab" aria-selected="false" data-tab="fixtures">Jadwal</button>
+    <button role="tab" aria-selected="false" data-tab="teams">Tim</button>
+    <button role="tab" aria-selected="false" data-tab="tools">Kapten &amp; transfer</button>
+    <button role="tab" aria-selected="false" data-tab="model">Cara model bekerja</button>
+  </nav>
+
+  <section class="tabpanel" id="tab-squad"></section>
+  <section class="tabpanel" id="tab-players" hidden></section>
+  <section class="tabpanel" id="tab-fixtures" hidden></section>
+  <section class="tabpanel" id="tab-teams" hidden></section>
+  <section class="tabpanel" id="tab-tools" hidden></section>
+  <section class="tabpanel" id="tab-model" hidden></section>
+
+  <footer>
+    <div id="footmeta"></div>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Detail pemain"></aside>
+
+<script type="application/json" id="fpldata">__DATA__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById('fpldata').textContent);
+const TEAMS = {}; D.teams.forEach(t => TEAMS[t.code] = t);
+const P = {}; D.players.forEach(p => P[p.id] = p);
+const POS = {1:'GKP',2:'DEF',3:'MID',4:'FWD'};
+const GOALPTS = {1:10,2:6,3:5,4:4}, CSPTS = {1:4,2:4,3:1,4:0};
+const QUOTA = {1:2,2:5,3:5,4:3};
+const GW0 = D.meta.next_gw, LASTGW = 38;
+
+/* ============================ state ============================ */
+const LS = 'kickofflab.v1';
+let S = {picks:[], cap:null, vice:null, budget:100.0, horizon:6, ovr:{}, freeT:1};
+let CAN_SAVE = true;
+try{
+  localStorage.setItem(LS + '.probe', '1'); localStorage.removeItem(LS + '.probe');
+  const raw = localStorage.getItem(LS); if(raw) S = Object.assign(S, JSON.parse(raw));
+}catch(e){ CAN_SAVE = false; }
+function save(){ if(!CAN_SAVE) return; try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){ CAN_SAVE = false; } }
+
+/* ============================ expected points engine ============================ */
+function minutesOf(p){
+  const o = S.ovr[p.id];
+  if(o === undefined || o === null) return {xm:p.xmins, ps:p.p_start, p60:p.p60, pp:p.p_play};
+  const xm = Math.max(0, Math.min(90, o));
+  const ps = Math.max(0, Math.min(0.98, xm / Math.max(p.mstart, 45)));
+  return {xm, ps, p60: ps * p.p60s, pp: Math.min(1, ps + (xm > 0 ? 0.04 : 0))};
+}
+/** Expected FPL points for one player in one fixture. */
+function xpFixture(p, f, m){
+  const t = TEAMS[p.team], mf = m.xm / 90;
+  const ascale = f.xg / Math.max(t.axg, 0.01), xgc = f.xgc;
+  const g = p.ge90 * mf * ascale, a = p.ae90 * mf * ascale;
+  const att = g * GOALPTS[p.pos] + a * 3;
+  const cs  = m.p60 * Math.exp(-xgc) * CSPTS[p.pos];
+  const gc  = p.pos <= 2 ? gcPenalty(xgc) * mf : 0;
+  const sv  = p.pos === 1 ? p.sv90 * mf * (xgc / Math.max(t.axgc, 0.01)) / 3 : 0;
+  const dc  = p.dc_rate * m.ps * p.avail * 2;
+  const bon = p.bonus90 * mf * (0.9 + 0.2 * ascale);
+  const app = m.pp + m.p60;
+  const card = -p.yc90 * mf;
+  return {total: att+cs+gc+sv+dc+bon+app+card, att, cs, gc, sv, dc, bon, app, card, g, a, ascale, xgc};
+}
+const _fact = [1,1,2,6,24,120,720,5040,40320,362880,3628800,39916800];
+function pois(k, lam){ return lam<=0 ? (k===0?1:0) : Math.exp(-lam)*Math.pow(lam,k)/_fact[k]; }
+function gcPenalty(lam){ let s=0; for(let k=0;k<12;k++) s += pois(k,lam)*Math.floor(k/2); return -s; }
+function fixturesOf(team, gw){ return (TEAMS[team].fix[gw] || []); }
+/** Sum of expected points across a run of gameweeks (doubles add, blanks score 0). */
+function xpRange(p, from, n){
+  const m = minutesOf(p); let s = 0;
+  for(let gw = from; gw < from + n && gw <= LASTGW; gw++)
+    for(const f of fixturesOf(p.team, gw)) s += xpFixture(p, f, m).total;
+  return s;
+}
+function xpGW(p, gw){
+  const m = minutesOf(p); let s = 0;
+  for(const f of fixturesOf(p.team, gw)) s += xpFixture(p, f, m).total;
+  return s;
+}
+const xpNext = p => xpGW(p, GW0);
+const xpH = p => xpRange(p, GW0, S.horizon);
+
+/* ============================ squad helpers ============================ */
+const squad = () => S.picks.map(id => P[id]).filter(Boolean);
+const cost = () => squad().reduce((s,p)=>s+p.price, 0);
+const bank = () => Math.round((S.budget - cost()) * 10) / 10;
+function countPos(pos){ return squad().filter(p=>p.pos===pos).length; }
+function countTeam(tc){ return squad().filter(p=>p.team===tc).length; }
+function canAdd(p, msgs){
+  if(S.picks.includes(p.id)) return 'Sudah ada di skuad';
+  if(countPos(p.pos) >= QUOTA[p.pos]) return `Kuota ${POS[p.pos]} sudah penuh (${QUOTA[p.pos]})`;
+  if(countTeam(p.team) >= 3) return `Sudah 3 pemain dari ${TEAMS[p.team].short}`;
+  if(p.price > bank() + 1e-9) return `Kurang dana — butuh £${p.price.toFixed(1)}m, bank £${bank().toFixed(1)}m`;
+  return null;
+}
+function addPlayer(p){
+  const err = canAdd(p);
+  if(err){ toast(err); return false; }
+  S.picks.push(p.id); if(!S.cap) S.cap = p.id; save(); renderAll(); return true;
+}
+function removePlayer(id){
+  S.picks = S.picks.filter(x=>x!==id);
+  if(S.cap===id) S.cap = null; if(S.vice===id) S.vice = null;
+  save(); renderAll();
+}
+/** Best legal XI (1 GK, 3–5 DEF, 2–5 MID, 1–3 FWD) by expected points. */
+function bestXI(list){
+  const by = {1:[],2:[],3:[],4:[]};
+  list.forEach(p => by[p.pos].push(p));
+  for(const k in by) by[k].sort((a,b)=>xpH(b)-xpH(a));
+  let best = null;
+  for(let d=3; d<=5; d++) for(let m=2; m<=5; m++){
+    const f = 10 - d - m; if(f<1 || f>3) continue;
+    if(by[1].length<1 || by[2].length<d || by[3].length<m || by[4].length<f) continue;
+    const xi = [by[1][0], ...by[2].slice(0,d), ...by[3].slice(0,m), ...by[4].slice(0,f)];
+    const tot = xi.reduce((s,p)=>s+xpH(p),0);
+    if(!best || tot > best.tot) best = {xi, tot, formation:`${d}-${m}-${f}`};
+  }
+  return best;
+}
+
+/* ============================ formatting ============================ */
+const f1 = v => (v==null||isNaN(v)) ? '–' : (Math.round(v*10)/10).toFixed(1);
+const f2 = v => (v==null||isNaN(v)) ? '–' : (Math.round(v*100)/100).toFixed(2);
+const money = v => '£' + f1(v) + 'm';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function statusInfo(p){
+  if(p.status==='a' && !p.news) return null;
+  const map = {i:['Cedera','crit'], s:['Suspensi','crit'], u:['Tidak tersedia','crit'], n:['Tidak terdaftar','crit'], d:['Diragukan','warn'], a:['Catatan','warn']};
+  const m = map[p.status] || ['Catatan','warn'];
+  return {label:m[0], tone:m[1], news:p.news, chance:p.chance};
+}
+let toastEl;
+function toast(msg){
+  if(!toastEl){
+    toastEl = document.createElement('div'); document.body.appendChild(toastEl);
+    toastEl.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--ground);padding:9px 16px;border-radius:8px;font-size:13px;z-index:99;box-shadow:var(--shadow);max-width:90vw;text-align:center';
+  }
+  toastEl.textContent = msg; toastEl.style.opacity='1';
+  clearTimeout(toastEl._t); toastEl._t = setTimeout(()=>toastEl.style.opacity='0', 2600);
+}
+/* difficulty colour: diverging blue (easy) ↔ red (hard), grey midpoint, number always shown */
+const DIFF_BG = {1:'var(--d1)',2:'var(--d2)',3:'var(--d3)',4:'var(--d4)',5:'var(--d5)'};
+const DIFF_FG = {1:'var(--diff-ink)',2:'var(--diff-ink)',3:'var(--diff-ink)',4:'var(--diff-ink)',5:'var(--diff-ink)'};
+</script>
+<script>
+/* ============================ tab: squad ============================ */
+function renderSquad(){
+  const el = document.getElementById('tab-squad');
+  const sq = squad(), n = sq.length;
+  const xi = n>=11 ? bestXI(sq) : null;
+  const benchIds = xi ? sq.filter(p=>!xi.xi.includes(p)).map(p=>p.id) : [];
+  const problems = [];
+  sq.forEach(p=>{ const si=statusInfo(p); if(si && si.tone==='crit') problems.push(`${p.name} — ${si.label.toLowerCase()}${p.news?': '+p.news:''}`); });
+  const lowMins = sq.filter(p=>p.xmins < 30 && p.avail > 0);
+
+  el.innerHTML = `
+  <div class="sect-h"><h2>Skuad saya</h2><p>${CAN_SAVE ? 'Tersimpan di browser ini. Ubah kapan saja — semua analisis ikut menyesuaikan.' : 'Ubah kapan saja — semua analisis ikut menyesuaikan.'}</p></div>
+  ${CAN_SAVE ? '' : `<div class="alert w" style="margin-bottom:12px"><span>◔</span><div><b>Browser ini tidak mengizinkan penyimpanan</b> untuk berkas lokal, jadi skuadmu hilang saat halaman ditutup. Pakai tombol <b>Salin kode</b> di panel Pengaturan untuk menyimpannya, atau buka lewat aplikasi Kickoff Lab yang menjalankan server lokal.</div></div>`}
+  <div class="squadgrid">
+    <div>
+      <div class="pitch" id="pitch">${pitchHTML(xi, benchIds, sq)}</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="autoxi">Susun XI terbaik</button>
+        <button class="btn" id="autofill">Isi otomatis dari £${f1(S.budget)}m</button>
+        <button class="btn" id="clearsq">Kosongkan</button>
+        <span class="hint" style="margin-left:auto">${n}/15 pemain</span>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card pad">
+        <div class="eyebrow">Tambah pemain</div>
+        <div class="row" style="margin-top:8px">
+          <div class="searchbox">
+            <input type="text" id="psearch" placeholder="Cari nama pemain…" autocomplete="off" style="width:100%">
+            <div id="presults"></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px; font-size:12px; color:var(--ink-3)">
+          Kuota: ${[1,2,3,4].map(k=>`<span class="mono">${POS[k]} ${countPos(k)}/${QUOTA[k]}</span>`).join(' · ')}
+        </div>
+      </div>
+      <div class="card pad">
+        <div class="eyebrow">Pengaturan</div>
+        <div class="grid" style="margin-top:9px; gap:11px">
+          <label class="row" style="justify-content:space-between">
+            <span>Horizon analisis</span>
+            <span class="row" style="gap:7px"><input type="range" min="1" max="8" value="${S.horizon}" id="hz" style="width:110px">
+            <b class="mono" style="width:56px; text-align:right">${S.horizon} GW</b></span>
+          </label>
+          <label class="row" style="justify-content:space-between">
+            <span>Budget total</span>
+            <input type="number" id="bud" value="${S.budget}" step="0.1" min="80" max="130" style="width:88px">
+          </label>
+          <div class="row" style="justify-content:space-between">
+            <span>Pindahkan skuad</span>
+            <span class="row" style="gap:6px">
+              <button class="btn sm" id="expsq">Salin kode</button>
+              <button class="btn sm" id="impsq">Tempel kode</button>
+            </span>
+          </div>
+          <div id="sqcode" hidden>
+            <textarea id="sqcodebox" rows="3" spellcheck="false"
+              style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--surface-2); color:var(--ink); border:1px solid var(--line-2); border-radius:8px; padding:8px; resize:vertical"></textarea>
+            <div class="row" style="margin-top:6px">
+              <button class="btn sm primary" id="sqapply">Terapkan kode ini</button>
+              <button class="btn sm" id="sqcancel">Batal</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${problems.length ? `<div class="alert c"><span>⚑</span><div><b>Perlu perhatian</b><br>${problems.map(esc).join('<br>')}</div></div>` : ''}
+      ${lowMins.length ? `<div class="alert w"><span>◔</span><div><b>Risiko menit bermain</b><br>${lowMins.map(p=>`${esc(p.name)} — proyeksi ${Math.round(p.xmins)} menit`).join('<br>')}</div></div>` : ''}
+      ${n>=11 ? summaryCard(xi, sq) : `<div class="card pad hint">Tambahkan minimal 11 pemain untuk melihat XI, kapten, dan proyeksi poin.</div>`}
+    </div>
+  </div>
+  ${n ? squadTable(sq, xi) : ''}`;
+
+  wireSquad(xi);
+}
+
+function pitchHTML(xi, benchIds, sq){
+  if(!sq.length) return `<div style="padding:44px 14px; text-align:center; color:var(--ink-3)">
+      <div style="font-size:15px; font-weight:600; color:var(--ink); font-family:Archivo">Belum ada pemain</div>
+      <p class="hint" style="margin-top:6px">Cari nama di kotak sebelah kanan, atau tekan “Isi otomatis” untuk membangun skuad dari nol berdasarkan proyeksi poin.</p></div>`;
+  if(!xi){
+    const rows = [1,2,3,4].map(k=>{
+      const list = sq.filter(p=>p.pos===k);
+      return list.length ? `<div class="prow">${list.map(p=>cardHTML(p)).join('')}</div>` : '';
+    }).join('');
+    return rows + `<div class="benchrow benchlbl eyebrow">XI otomatis muncul setelah 11 pemain</div>`;
+  }
+  const byPos = k => xi.xi.filter(p=>p.pos===k);
+  const rows = [1,2,3,4].map(k=>`<div class="prow">${byPos(k).map(p=>cardHTML(p)).join('')}</div>`).join('');
+  const bench = benchIds.map(id=>P[id]);
+  return rows + `<div class="benchrow"><div class="benchlbl eyebrow">Cadangan · formasi ${xi.formation}</div>
+    <div class="prow">${bench.map(p=>cardHTML(p,true)).join('')}</div></div>`;
+}
+function cardHTML(p, isBench){
+  const si = statusInfo(p);
+  const tag = S.cap===p.id ? 'C' : (S.vice===p.id ? 'V' : '');
+  const flag = si ? `<span class="flag" style="background:var(--${si.tone==='crit'?'crit':'warn'})">${si.tone==='crit'?'✕':'!'}</span>` : '';
+  return `<div class="pcard${isBench?' bench':''}" data-pid="${p.id}" style="${isBench?'opacity:.72':''}">
+    ${tag?`<span class="tag">${tag}</span>`:''}${flag}
+    <div class="nm">${esc(p.name)}</div>
+    <div class="meta"><span>${TEAMS[p.team].short}</span><span>${POS[p.pos]}</span><span>${f1(p.price)}</span></div>
+    <div class="xp">${f1(xpNext(p))}</div>
+  </div>`;
+}
+function summaryCard(xi, sq){
+  const capP = S.cap ? P[S.cap] : null;
+  const inXI = capP && xi.xi.includes(capP);
+  const totalNext = xi.xi.reduce((s,p)=>s+xpNext(p),0) + (inXI ? xpNext(capP) : 0);
+  const per = [];
+  for(let i=0;i<S.horizon;i++){
+    const gw = GW0+i; if(gw>LASTGW) break;
+    per.push({gw, v: bestXI(sq).xi.reduce((s,p)=>s+xpGW(p,gw),0)});
+  }
+  const mx = Math.max(...per.map(x=>x.v), 1);
+  return `<div class="card pad">
+    <div class="eyebrow">Proyeksi XI terbaik</div>
+    <div class="kv" style="margin-top:9px">
+      <div class="b"><div class="k">xP GW${GW0}</div><div class="v">${f1(totalNext)}</div><div class="s">${inXI?'termasuk kapten':'kapten belum di XI'}</div></div>
+      <div class="b"><div class="k">xP ${S.horizon} GW</div><div class="v">${f1(xi.tot)}</div><div class="s">formasi ${xi.formation}</div></div>
+      <div class="b"><div class="k">Nilai skuad</div><div class="v">${f1(cost())}</div><div class="s">bank ${money(bank())}</div></div>
+    </div>
+    <div class="eyebrow" style="margin-top:14px">xP XI per gameweek</div>
+    <div class="sparks" style="margin-top:6px" role="img" aria-label="Proyeksi poin XI per gameweek">
+      ${per.map(x=>`<i style="height:${Math.max(6,(x.v/mx)*100)}%" title="GW${x.gw}: ${f1(x.v)} poin"></i>`).join('')}
+    </div>
+    <div class="row" style="gap:0; margin-top:4px">
+      ${per.map(x=>`<span class="mono" style="flex:1; text-align:center; font-size:9.5px; color:var(--ink-3); line-height:1.35">
+        <b style="color:var(--ink-2); font-size:11px">${f1(x.v)}</b><br>GW${x.gw}</span>`).join('')}
+    </div>
+  </div>`;
+}
+function squadTable(sq, xi){
+  const rows = sq.slice().sort((a,b)=> a.pos-b.pos || xpH(b)-xpH(a)).map(p=>{
+    const inXI = xi && xi.xi.includes(p);
+    const nx = fixturesOf(p.team, GW0);
+    return `<tr data-pid="${p.id}">
+      <td class="l"><span class="posbadge">${POS[p.pos]}</span></td>
+      <td class="l"><span class="pname">${esc(p.name)}</span> <span class="tteam">${TEAMS[p.team].short}</span></td>
+      <td class="l">${inXI?'<b>XI</b>':'<span style="color:var(--ink-3)">bench</span>'}</td>
+      <td class="l mono" style="font-size:11px">${nx.length?nx.map(f=>`${TEAMS[f.opp].short}${f.h?'(H)':'(A)'}`).join(' + '):'<span style="color:var(--ink-3)">kosong</span>'}</td>
+      <td class="num">${f1(p.price)}</td>
+      <td class="num">${Math.round(p.xmins)}</td>
+      <td class="num">${f2(xpNext(p))}</td>
+      <td class="num">${f1(xpH(p))}</td>
+      <td class="num">${f1(p.sel)}%</td>
+      <td class="l"><button class="btn sm" data-cap="${p.id}">C</button> <button class="btn sm" data-vice="${p.id}">V</button> <button class="btn sm" data-rm="${p.id}">Hapus</button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="sect-h"><h2>Rincian skuad</h2></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="l">Pos</th><th class="l">Pemain</th><th class="l">Status</th><th class="l">Lawan GW${GW0}</th>
+    <th>Harga</th><th>xMin</th><th>xP GW${GW0}</th><th>xP ${S.horizon}GW</th><th>Milik</th><th class="l">Aksi</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function wireSquad(xi){
+  const el = document.getElementById('tab-squad');
+  el.querySelectorAll('[data-pid]').forEach(n => n.addEventListener('click', e=>{
+    if(e.target.closest('button')) return;
+    openDrawer(+n.dataset.pid);
+  }));
+  el.querySelectorAll('[data-cap]').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation(); const id=+b.dataset.cap; S.cap = S.cap===id?null:id; if(S.vice===id) S.vice=null; save(); renderAll();
+  }));
+  el.querySelectorAll('[data-vice]').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation(); const id=+b.dataset.vice; S.vice = S.vice===id?null:id; if(S.cap===id) S.cap=null; save(); renderAll();
+  }));
+  el.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); removePlayer(+b.dataset.rm); }));
+  const hz = el.querySelector('#hz'); if(hz) hz.addEventListener('input', ()=>{ S.horizon = +hz.value; save(); renderAll(); });
+  const bud = el.querySelector('#bud'); if(bud) bud.addEventListener('change', ()=>{ S.budget = +bud.value||100; save(); renderAll(); });
+  const cl = el.querySelector('#clearsq'); if(cl) cl.addEventListener('click', ()=>{ if(confirm('Kosongkan seluruh skuad?')){ S.picks=[]; S.cap=null; S.vice=null; save(); renderAll(); }});
+  const ax = el.querySelector('#autoxi'); if(ax) ax.addEventListener('click', ()=>{
+    const sq = squad(); if(sq.length<11){ toast('Butuh minimal 11 pemain'); return; }
+    const b = bestXI(sq); if(!b){ toast('Komposisi belum memenuhi formasi sah'); return; }
+    const best = b.xi.slice().sort((a,c)=>xpNext(c)-xpNext(a));
+    S.cap = best[0].id; S.vice = best[1] ? best[1].id : null; save(); renderAll();
+    toast(`Formasi ${b.formation} · kapten ${best[0].name}`);
+  });
+  const af = el.querySelector('#autofill'); if(af) af.addEventListener('click', ()=>{ autoBuild(); });
+  wireSearch(el.querySelector('#psearch'), el.querySelector('#presults'), p => addPlayer(p));
+
+  const box = el.querySelector('#sqcode'), area = el.querySelector('#sqcodebox');
+  const ex = el.querySelector('#expsq');
+  if(ex) ex.addEventListener('click', async ()=>{
+    if(!S.picks.length){ toast('Skuad masih kosong'); return; }
+    const code = encodeSquad();
+    box.hidden = false; area.value = code; area.select();
+    el.querySelector('#sqapply').hidden = true;
+    try{ await navigator.clipboard.writeText(code); toast('Kode skuad disalin'); }
+    catch(e){ toast('Salin kode di kotak ini (Cmd+C)'); }
+  });
+  const im = el.querySelector('#impsq');
+  if(im) im.addEventListener('click', ()=>{
+    box.hidden = false; area.value = ''; area.placeholder = 'Tempel kode skuad di sini…';
+    el.querySelector('#sqapply').hidden = false; area.focus();
+  });
+  const ap = el.querySelector('#sqapply');
+  if(ap) ap.addEventListener('click', ()=>{
+    const r = decodeSquad(area.value.trim());
+    toast(r.ok ? `Skuad dimuat: ${r.n} pemain` : r.msg);
+    if(r.ok) renderAll();
+  });
+  const cn = el.querySelector('#sqcancel'); if(cn) cn.addEventListener('click', ()=>{ box.hidden = true; });
+}
+
+/** Squad as a portable code, so it can move between browsers or a local copy of this page. */
+function encodeSquad(){
+  const payload = {v:1, p:S.picks, c:S.cap, vc:S.vice, b:S.budget, h:S.horizon, o:S.ovr};
+  return 'KL1.' + btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/=+$/,'');
+}
+function decodeSquad(code){
+  try{
+    if(!code.startsWith('KL1.')) return {ok:false, msg:'Kode tidak dikenali — harus diawali KL1.'};
+    const json = decodeURIComponent(escape(atob(code.slice(4))));
+    const d = JSON.parse(json);
+    const ids = (d.p||[]).filter(i => P[i]);
+    if(!ids.length) return {ok:false, msg:'Kode tidak berisi pemain yang dikenali'};
+    const dropped = (d.p||[]).length - ids.length;
+    S.picks = ids;
+    S.cap = P[d.c] ? d.c : null;
+    S.vice = P[d.vc] ? d.vc : null;
+    if(d.b) S.budget = +d.b;
+    if(d.h) S.horizon = +d.h;
+    S.ovr = {};
+    for(const k in (d.o||{})) if(P[k]) S.ovr[k] = d.o[k];
+    save();
+    return {ok:true, n:ids.length, msg: dropped ? `${dropped} pemain tidak ada di data ini` : ''};
+  }catch(e){ return {ok:false, msg:'Kode rusak atau tidak lengkap'}; }
+}
+
+/* search with keyboard support */
+function wireSearch(input, out, onPick){
+  if(!input) return;
+  let hl = 0, cur = [];
+  const draw = () => {
+    const q = input.value.trim().toLowerCase();
+    if(q.length < 2){ out.innerHTML=''; cur=[]; return; }
+    cur = D.players.filter(p => (p.name+' '+p.full).toLowerCase().includes(q))
+      .sort((a,b)=>xpH(b)-xpH(a)).slice(0,14);
+    out.className = cur.length ? 'results' : '';
+    out.innerHTML = cur.map((p,i)=>`<div class="${i===hl?'hl':''}" data-i="${i}">
+      <span class="posbadge">${POS[p.pos]}</span><span>${esc(p.name)}</span>
+      <span class="tteam">${TEAMS[p.team].short}</span>
+      <span class="rp">${money(p.price)} · xP${f1(xpH(p))}</span></div>`).join('');
+    out.querySelectorAll('div[data-i]').forEach(n=>n.addEventListener('mousedown', e=>{
+      e.preventDefault(); pick(+n.dataset.i);
+    }));
+  };
+  const pick = i => { const p = cur[i]; if(!p) return; if(onPick(p) !== false){ input.value=''; out.innerHTML=''; out.className=''; } };
+  input.addEventListener('input', ()=>{ hl=0; draw(); });
+  input.addEventListener('keydown', e=>{
+    if(e.key==='ArrowDown'){ hl=Math.min(hl+1,cur.length-1); draw(); e.preventDefault(); }
+    else if(e.key==='ArrowUp'){ hl=Math.max(hl-1,0); draw(); e.preventDefault(); }
+    else if(e.key==='Enter'){ pick(hl); e.preventDefault(); }
+    else if(e.key==='Escape'){ out.innerHTML=''; out.className=''; }
+  });
+  input.addEventListener('blur', ()=>setTimeout(()=>{ out.innerHTML=''; out.className=''; }, 120));
+}
+
+/** Greedy build under budget, quota and 3-per-club, then local swap improvement. */
+function autoBuild(){
+  const budget = S.budget;
+  const pool = D.players.filter(p => p.avail > 0.4 && p.xmins > 15)
+    .map(p => ({p, xp: xpRange(p, GW0, S.horizon)}));
+  const picks = [], teamCnt = {}, posCnt = {1:0,2:0,3:0,4:0};
+  let spend = 0;
+  // cheap enablers first so the budget always closes, then upgrade
+  const need = 15;
+  const sorted = pool.slice().sort((a,b)=> (b.xp/Math.max(b.p.price,0.1)) - (a.xp/Math.max(a.p.price,0.1)));
+  for(const c of sorted){
+    if(picks.length>=need) break;
+    const p = c.p;
+    if(posCnt[p.pos] >= QUOTA[p.pos]) continue;
+    if((teamCnt[p.team]||0) >= 3) continue;
+    const remaining = need - picks.length - 1;
+    if(spend + p.price + remaining * 4.0 > budget + 1e-9) continue;
+    picks.push(c); spend += p.price; posCnt[p.pos]++; teamCnt[p.team] = (teamCnt[p.team]||0)+1;
+  }
+  // local improvement: swap in higher-xP players while budget allows
+  for(let iter=0; iter<600; iter++){
+    let improved = false;
+    for(let i=0;i<picks.length;i++){
+      const outp = picks[i].p, room = budget - spend + outp.price;
+      let best = null;
+      for(const c of pool){
+        const p = c.p;
+        if(p.pos !== outp.pos || p.price > room) continue;
+        if(picks.some(x=>x.p.id===p.id)) continue;
+        const tc = (teamCnt[p.team]||0) - (p.team===outp.team?1:0);
+        if(tc >= 3) continue;
+        if(c.xp > picks[i].xp + 0.01 && (!best || c.xp > best.xp)) best = c;
+      }
+      if(best){
+        teamCnt[outp.team]--; teamCnt[best.p.team] = (teamCnt[best.p.team]||0)+1;
+        spend += best.p.price - outp.price; picks[i] = best; improved = true;
+      }
+    }
+    if(!improved) break;
+  }
+  S.picks = picks.map(c=>c.p.id);
+  const b = bestXI(picks.map(c=>c.p));
+  if(b){ const o = b.xi.slice().sort((x,y)=>xpNext(y)-xpNext(x)); S.cap=o[0].id; S.vice=o[1]?o[1].id:null; }
+  save(); renderAll();
+  toast(`Skuad dibangun: ${money(spend)} terpakai, sisa ${money(budget-spend)}`);
+}
+</script>
+<script>
+/* ============================ tab: players ============================ */
+const COLSETS = {
+  dasar:   {label:'Dasar', cols:['price','pts','ppg','mins','starts','g','a','cs','bonus','bps','yc','og']},
+  model:   {label:'Model & proyeksi', cols:['price','xmins','p_start','xpN','xpH','val','sel','form']},
+  under:   {label:'Underlying (xG)', cols:['price','mins','xg','xa','xgi','xg90','xa90','sh90','sot90','cc90','tob90']},
+  def:     {label:'Bertahan & GK', cols:['price','mins','cs','gc','saves','dc','dc90','dc_rate','xgc']},
+  owner:   {label:'Kepemilikan', cols:['price','sel','tin','tout','net','cost_change','form','pts']},
+  hist:    {label:'Musim lalu', cols:['price','h_pts','h_mins','h_starts','h_g','h_a','h_xg','h_xa','h_cs','h_bonus']},
+};
+const COLDEF = {
+  price:{h:'Harga', v:p=>p.price, f:f1},
+  pts:{h:'Poin', v:p=>p.pts, f:v=>v},
+  ppg:{h:'PPM', v:p=>p.ppg, f:f1},
+  mins:{h:'Menit', v:p=>p.mins, f:v=>v},
+  starts:{h:'Start', v:p=>p.starts, f:v=>v},
+  g:{h:'Gol', v:p=>p.g, f:v=>v}, a:{h:'Asis', v:p=>p.a, f:v=>v},
+  cs:{h:'CS', v:p=>p.cs, f:v=>v}, gc:{h:'Kebobolan', v:p=>p.gc, f:v=>v},
+  bonus:{h:'Bonus', v:p=>p.bonus, f:v=>v}, bps:{h:'BPS', v:p=>p.bps, f:v=>v},
+  yc:{h:'Kartu ⬛', v:p=>p.yc, f:v=>v}, og:{h:'Gol bunuh diri', v:p=>p.og, f:v=>v},
+  saves:{h:'Save', v:p=>p.saves, f:v=>v},
+  xg:{h:'xG', v:p=>p.xg, f:f2}, xa:{h:'xA', v:p=>p.xa, f:f2}, xgi:{h:'xGI', v:p=>p.xgi, f:f2},
+  xgc:{h:'xGC', v:p=>p.xgc, f:f2},
+  xg90:{h:'xG/90', v:p=>p.xg90, f:f2}, xa90:{h:'xA/90', v:p=>p.xa90, f:f2},
+  sh90:{h:'Tembakan/90', v:p=>p.sh90, f:f2}, sot90:{h:'On target/90', v:p=>p.sot90, f:f2},
+  cc90:{h:'Peluang dibuat/90', v:p=>p.cc90, f:f2}, tob90:{h:'Sentuh kotak/90', v:p=>p.tob90, f:f2},
+  dc:{h:'Aksi bertahan', v:p=>p.dc, f:v=>v}, dc90:{h:'AB/90', v:p=>p.dc90, f:f1},
+  dc_rate:{h:'Peluang poin AB', v:p=>p.dc_rate*100, f:v=>Math.round(v)+'%'},
+  xmins:{h:'xMin', v:p=>p.xmins, f:v=>Math.round(v)},
+  p_start:{h:'Peluang start', v:p=>p.p_start*100, f:v=>Math.round(v)+'%'},
+  xpN:{h:'xP GW'+GW0, v:p=>xpNext(p), f:f2},
+  xpH:{h:'xP horizon', v:p=>xpH(p), f:f1},
+  val:{h:'xP per £m', v:p=>xpH(p)/p.price, f:f2},
+  sel:{h:'Dimiliki %', v:p=>p.sel, f:f1},
+  form:{h:'Form', v:p=>p.form, f:f1},
+  tin:{h:'Masuk (GW)', v:p=>p.tin, f:v=>v.toLocaleString('id-ID')},
+  tout:{h:'Keluar (GW)', v:p=>p.tout, f:v=>v.toLocaleString('id-ID')},
+  net:{h:'Net transfer', v:p=>p.tin-p.tout, f:v=>(v>0?'+':'')+v.toLocaleString('id-ID')},
+  cost_change:{h:'Δ harga', v:p=>p.cost_change, f:v=>(v>0?'+':'')+f1(v)},
+  h_pts:{h:'Poin 25/26', v:p=>p.h_pts, f:v=>v}, h_mins:{h:'Menit 25/26', v:p=>p.h_mins, f:v=>v},
+  h_starts:{h:'Start 25/26', v:p=>p.h_starts, f:v=>v}, h_g:{h:'Gol 25/26', v:p=>p.h_g, f:v=>v},
+  h_a:{h:'Asis 25/26', v:p=>p.h_a, f:v=>v}, h_xg:{h:'xG 25/26', v:p=>p.h_xg, f:f1},
+  h_xa:{h:'xA 25/26', v:p=>p.h_xa, f:f1}, h_cs:{h:'CS 25/26', v:p=>p.h_cs, f:v=>v},
+  h_bonus:{h:'Bonus 25/26', v:p=>p.h_bonus, f:v=>v},
+};
+let PF = {set:'model', pos:0, team:0, maxPrice:16, minMins:0, q:'', sort:'xpH', desc:true, avail:true, limit:60};
+function renderPlayers(){
+  const el = document.getElementById('tab-players');
+  el.innerHTML = `
+  <div class="sect-h"><h2>Basis data pemain</h2><p>${D.players.length} pemain · klik baris untuk rincian lengkap dan proyeksi.</p></div>
+  <div class="card pad" style="margin-bottom:12px">
+    <div class="row">
+      <input type="text" id="fq" placeholder="Cari nama…" value="${esc(PF.q)}" style="min-width:150px">
+      <select id="fpos"><option value="0">Semua posisi</option>${[1,2,3,4].map(k=>`<option value="${k}" ${PF.pos==k?'selected':''}>${POS[k]}</option>`).join('')}</select>
+      <select id="fteam"><option value="0">Semua tim</option>${D.teams.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>`<option value="${t.code}" ${PF.team==t.code?'selected':''}>${t.name}</option>`).join('')}</select>
+      <label class="row" style="gap:6px; font-size:12.5px">Harga ≤ <input type="range" id="fpr" min="3.8" max="16" step="0.1" value="${PF.maxPrice}" style="width:96px"><b class="mono">${f1(PF.maxPrice)}</b></label>
+      <label class="row" style="gap:6px; font-size:12.5px">xMin ≥ <input type="range" id="fmn" min="0" max="90" step="5" value="${PF.minMins}" style="width:90px"><b class="mono">${PF.minMins}</b></label>
+      <label class="row" style="gap:6px; font-size:12.5px"><input type="checkbox" id="fav" ${PF.avail?'checked':''}> Sembunyikan yang cedera/absen</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      ${Object.entries(COLSETS).map(([k,v])=>`<button class="chip" data-set="${k}" aria-pressed="${PF.set===k}">${v.label}</button>`).join('')}
+    </div>
+  </div>
+  <div id="ptable"></div>`;
+  el.querySelector('#fq').addEventListener('input', e=>{ PF.q=e.target.value; drawPlayerTable(); });
+  el.querySelector('#fpos').addEventListener('change', e=>{ PF.pos=+e.target.value; drawPlayerTable(); });
+  el.querySelector('#fteam').addEventListener('change', e=>{ PF.team=+e.target.value; drawPlayerTable(); });
+  el.querySelector('#fpr').addEventListener('input', e=>{ PF.maxPrice=+e.target.value; e.target.nextElementSibling.textContent=f1(PF.maxPrice); drawPlayerTable(); });
+  el.querySelector('#fmn').addEventListener('input', e=>{ PF.minMins=+e.target.value; e.target.nextElementSibling.textContent=PF.minMins; drawPlayerTable(); });
+  el.querySelector('#fav').addEventListener('change', e=>{ PF.avail=e.target.checked; drawPlayerTable(); });
+  el.querySelectorAll('[data-set]').forEach(b=>b.addEventListener('click', ()=>{
+    PF.set=b.dataset.set;
+    el.querySelectorAll('[data-set]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.set===PF.set));
+    drawPlayerTable();
+  }));
+  drawPlayerTable();
+}
+function filteredPlayers(){
+  const q = PF.q.trim().toLowerCase();
+  return D.players.filter(p=>{
+    if(PF.pos && p.pos!==PF.pos) return false;
+    if(PF.team && p.team!==PF.team) return false;
+    if(p.price > PF.maxPrice) return false;
+    if(p.xmins < PF.minMins) return false;
+    if(PF.avail && p.avail <= 0.25) return false;
+    if(q && !(p.name+' '+p.full).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function drawPlayerTable(){
+  const cols = COLSETS[PF.set].cols;
+  if(!cols.includes(PF.sort)) PF.sort = cols.includes('xpH') ? 'xpH' : cols[0];
+  const list = filteredPlayers().sort((a,b)=>{
+    const va = COLDEF[PF.sort].v(a), vb = COLDEF[PF.sort].v(b);
+    return PF.desc ? vb-va : va-vb;
+  });
+  const shown = list.slice(0, PF.limit);
+  const mx = Math.max(...shown.map(p=>COLDEF[PF.sort].v(p)), 0.0001);
+  document.getElementById('ptable').innerHTML = `
+  <div class="tblwrap"><table>
+    <thead><tr><th class="l">Pemain</th><th class="l">Lawan berikutnya</th>
+    ${cols.map(c=>`<th data-c="${c}" class="${PF.sort===c?'sorted':''}">${COLDEF[c].h}${PF.sort===c?(PF.desc?' ↓':' ↑'):''}</th>`).join('')}
+    <th></th></tr></thead>
+    <tbody>${shown.map(p=>{
+      const si = statusInfo(p);
+      const fx = fixturesOf(p.team, GW0);
+      return `<tr data-pid="${p.id}">
+        <td class="l"><span class="posbadge">${POS[p.pos]}</span> <span class="pname">${esc(p.name)}</span>
+          <span class="tteam">${TEAMS[p.team].short}</span>
+          ${si?`<span title="${esc(si.news||si.label)}" style="color:var(--${si.tone==='crit'?'crit':'warn'})">●</span>`:''}</td>
+        <td class="l">${fx.length?fx.map(f=>`<span class="fcell" style="display:inline-block;background:${DIFF_BG[f.adif]};color:${DIFF_FG[f.adif]};padding:2px 5px;min-width:0">${TEAMS[f.opp].short}${f.h?'':'·a'}</span>`).join(' '):'<span class="tteam">kosong</span>'}</td>
+        ${cols.map(c=>{
+          const v = COLDEF[c].v(p);
+          const bar = c===PF.sort ? `<span class="bar" style="width:${Math.max(0,Math.min(100,(v/mx)*100))}%; opacity:.5"></span>` : '';
+          return `<td class="num">${COLDEF[c].f(v)}${bar}</td>`;
+        }).join('')}
+        <td><button class="btn sm" data-add="${p.id}">+</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>
+  <div class="row" style="margin-top:10px">
+    <span class="hint">${shown.length} dari ${list.length} pemain</span>
+    ${list.length>shown.length?`<button class="btn sm" id="more">Tampilkan 60 lagi</button>`:''}
+  </div>`;
+  const t = document.getElementById('ptable');
+  t.querySelectorAll('th[data-c]').forEach(th=>th.addEventListener('click', ()=>{
+    if(PF.sort===th.dataset.c) PF.desc=!PF.desc; else { PF.sort=th.dataset.c; PF.desc=true; }
+    drawPlayerTable();
+  }));
+  t.querySelectorAll('tr[data-pid]').forEach(tr=>tr.addEventListener('click', e=>{
+    if(e.target.closest('button')) return; openDrawer(+tr.dataset.pid);
+  }));
+  t.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation(); const p=P[+b.dataset.add]; if(addPlayer(p)) toast(`${p.name} masuk skuad`);
+  }));
+  const m = t.querySelector('#more'); if(m) m.addEventListener('click', ()=>{ PF.limit+=60; drawPlayerTable(); });
+}
+</script>
+<script>
+/* ============================ tab: fixtures ============================ */
+let FX = {n:6, mode:'att'};
+function renderFixtures(){
+  const el = document.getElementById('tab-fixtures');
+  const gws = []; for(let g=GW0; g<GW0+FX.n && g<=LASTGW; g++) gws.push(g);
+  const key = FX.mode==='att' ? 'adif' : 'ddif';
+  const rows = D.teams.map(t=>{
+    let sum=0, cnt=0;
+    const cells = gws.map(g=>{
+      const fl = fixturesOf(t.code, g);
+      fl.forEach(f=>{ sum += f[key]; cnt++; });
+      return {g, fl};
+    });
+    return {t, cells, avg: cnt? sum/cnt : 6, cnt};
+  }).sort((a,b)=> a.avg-b.avg);
+  el.innerHTML = `
+  <div class="sect-h"><h2>Kalender ${FX.n} gameweek ke depan</h2>
+    <p>Diurutkan dari jadwal termudah. Angka di tiap sel = tingkat kesulitan model (1 paling mudah, 5 paling berat).</p></div>
+  <div class="card pad" style="margin-bottom:12px">
+    <div class="row">
+      <span class="eyebrow">Sudut pandang</span>
+      <button class="chip" data-mode="att" aria-pressed="${FX.mode==='att'}">Menyerang (peluang gol/asis)</button>
+      <button class="chip" data-mode="def" aria-pressed="${FX.mode==='def'}">Bertahan (peluang clean sheet)</button>
+      <label class="row" style="gap:7px; margin-left:auto; font-size:12.5px">Jumlah GW
+        <input type="range" id="fxn" min="3" max="10" value="${FX.n}" style="width:110px"><b class="mono">${FX.n}</b></label>
+    </div>
+    <div class="legend" style="margin-top:11px">
+      <span>Mudah</span>
+      ${[1,2,3,4,5].map(d=>`<i style="background:${DIFF_BG[d]}"></i>`).join('')}
+      <span>Berat</span>
+      <span style="margin-left:14px; color:var(--ink-3)">Kotak berbingkai = double gameweek · sel kosong = blank gameweek</span>
+    </div>
+  </div>
+  <div class="tblwrap pad">
+    <table class="fgrid">
+      <thead><tr><th class="l" style="background:none; position:static">Tim</th>
+      ${gws.map(g=>`<th style="background:none; position:static; text-align:center">GW${g}</th>`).join('')}
+      <th style="background:none; position:static">Rata-rata</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td class="l" style="padding-right:9px"><b>${r.t.short}</b> <span class="tteam">${esc(r.t.name)}</span></td>
+        ${r.cells.map(c=>{
+          if(!c.fl.length) return `<td><div class="fcell blank">–</div></td>`;
+          return `<td><div class="${c.fl.length>1?'dgw':''}" style="display:flex; gap:2px">${c.fl.map(f=>{
+            const d = f[key];
+            return `<div class="fcell" style="background:${DIFF_BG[d]}; color:${DIFF_FG[d]}; flex:1" title="${esc(TEAMS[f.opp].name)} ${f.h?'kandang':'tandang'} · xG ${f2(f.xg)} · xGC ${f2(f.xgc)}">
+              <div class="o">${TEAMS[f.opp].short}${f.h?'':'·a'}</div><div class="v">${d}</div></div>`;
+          }).join('')}</div></td>`;
+        }).join('')}
+        <td><div class="fcell" style="background:var(--surface-3)"><b>${f1(r.avg)}</b></div></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>
+  <p class="hint" style="margin-top:10px">Kesulitan dihitung dari model kekuatan tim (Elo + xG/xGC musim lalu dan musim ini), bukan dari FDR resmi FPL — karena FDR resmi jarang berubah sepanjang musim.</p>`;
+  el.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click', ()=>{ FX.mode=b.dataset.mode; renderFixtures(); }));
+  el.querySelector('#fxn').addEventListener('input', e=>{ FX.n=+e.target.value; renderFixtures(); });
+}
+
+/* ============================ tab: teams ============================ */
+let TS = {sort:'att', desc:true};
+function renderTeams(){
+  const el = document.getElementById('tab-teams');
+  const cols = [
+    ['short','Tim', t=>t.short, v=>v, 'l'],
+    ['elo','Elo', t=>t.elo, v=>v],
+    ['att','Indeks serang', t=>t.att, f2],
+    ['dfn','Indeks bertahan', t=>t.dfn, f2],
+    ['axg','xG/laga', t=>t.axg, f2],
+    ['axgc','xGC/laga', t=>t.axgc, f2],
+    ['gf','Gol 25/26', t=>t.h25.gf||0, v=>v],
+    ['ga','Kebobolan 25/26', t=>t.h25.ga||0, v=>v],
+    ['xg25','xG 25/26', t=>t.h25.xg||0, f1],
+    ['xgc25','xGC 25/26', t=>t.h25.xgc||0, f1],
+    ['bc','Peluang emas', t=>t.h25.bc||0, v=>v],
+    ['bcc','Peluang emas diberikan', t=>t.h25.bc_c||0, v=>v],
+    ['shots','Tembakan', t=>t.h25.shots||0, v=>v],
+    ['poss','Penguasaan %', t=>t.h25.poss||0, f1],
+    ['cs','CS 25/26', t=>t.h25.cs||0, v=>v],
+  ];
+  const cur = cols.find(c=>c[0]===TS.sort) || cols[2];
+  const rows = D.teams.slice().sort((a,b)=> TS.desc ? cur[2](b)-cur[2](a) : cur[2](a)-cur[2](b));
+  const promoted = D.teams.filter(t=>!t.h25.gp);
+  el.innerHTML = `
+  <div class="sect-h"><h2>Kekuatan tim</h2><p>Indeks serang/bertahan adalah pengali terhadap rata-rata liga (1,00 = rata-rata). Angka di bawah 1,00 pada kolom bertahan berarti tim itu sulit dibobol.</p></div>
+  ${promoted.length?`<div class="alert w" style="margin-bottom:12px"><span>↑</span><div>${promoted.map(t=>esc(t.name)).join(', ')} baru promosi — tidak punya data Premier League 25/26, jadi indeksnya bersandar pada rating Elo dan hasil musim ini.</div></div>`:''}
+  <div class="tblwrap"><table>
+    <thead><tr>${cols.map(c=>`<th data-c="${c[0]}" class="${c[4]||''} ${TS.sort===c[0]?'sorted':''}">${c[1]}${TS.sort===c[0]?(TS.desc?' ↓':' ↑'):''}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(t=>`<tr>
+      ${cols.map(c=>{
+        const v = c[2](t);
+        if(c[0]==='short') return `<td class="l"><b>${t.short}</b> <span class="tteam">${esc(t.name)}</span></td>`;
+        return `<td class="num">${c[3](v)}</td>`;
+      }).join('')}
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+  el.querySelectorAll('th[data-c]').forEach(th=>th.addEventListener('click', ()=>{
+    if(TS.sort===th.dataset.c) TS.desc=!TS.desc; else { TS.sort=th.dataset.c; TS.desc=true; }
+    renderTeams();
+  }));
+}
+</script>
+<script>
+/* ============================ tab: tools ============================ */
+let TL = {maxOwn:10, poolMax:16};
+function renderTools(){
+  const el = document.getElementById('tab-tools');
+  const sq = squad();
+  const capList = (sq.length>=11 ? bestXI(sq).xi : sq).slice()
+    .map(p=>({p, xp:xpNext(p), eo:p.sel}))
+    .sort((a,b)=>b.xp-a.xp).slice(0,8);
+  const pool = D.players.filter(p=>p.avail>0.4 && p.xmins>25);
+  const diffs = pool.filter(p=>p.sel <= TL.maxOwn).map(p=>({p, xp:xpH(p)})).sort((a,b)=>b.xp-a.xp).slice(0,15);
+  const value = pool.map(p=>({p, v:xpH(p)/p.price, xp:xpH(p)})).sort((a,b)=>b.v-a.v).slice(0,15);
+  const transfers = transferIdeas();
+
+  el.innerHTML = `
+  <div class="sect-h"><h2>Kapten, differential, dan transfer</h2><p>Semua peringkat memakai horizon ${S.horizon} gameweek yang kamu set di tab Skuad.</p></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); align-items:start">
+
+    <div class="card pad">
+      <div class="eyebrow">Peringkat kapten · GW${GW0}</div>
+      ${capList.length ? `<table style="margin-top:8px">
+        <thead><tr><th class="l">Pemain</th><th>xP</th><th>Kali 2</th><th>Dimiliki</th></tr></thead>
+        <tbody>${capList.map((c,i)=>`<tr data-pid="${c.p.id}">
+          <td class="l">${i===0?'<b>★</b> ':''}<span class="pname">${esc(c.p.name)}</span> <span class="tteam">${TEAMS[c.p.team].short}</span>${S.cap===c.p.id?' <span class="posbadge">C</span>':''}</td>
+          <td class="num">${f2(c.xp)}</td><td class="num"><b>${f2(c.xp*2)}</b></td><td class="num">${f1(c.eo)}%</td>
+        </tr>`).join('')}</tbody></table>
+        <p class="hint" style="margin-top:8px">Kepemilikan tinggi = pilihan aman (kalau gagal, rank tidak jatuh). Kepemilikan rendah dengan xP mirip = taruhan untuk naik rank.</p>`
+        : `<p class="hint" style="margin-top:8px">Isi skuad dulu untuk melihat peringkat kapten.</p>`}
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">Ide transfer dari skuadmu</div>
+      ${sq.length ? (transfers.length ? `<table style="margin-top:8px">
+        <thead><tr><th class="l">Keluar</th><th class="l">Masuk</th><th>Δ xP</th><th>Δ £</th></tr></thead>
+        <tbody>${transfers.map(t=>`<tr data-pid="${t.in.id}">
+          <td class="l"><span class="pname">${esc(t.out.name)}</span> <span class="tteam">${TEAMS[t.out.team].short}</span></td>
+          <td class="l"><span class="pname">${esc(t.in.name)}</span> <span class="tteam">${TEAMS[t.in.team].short}</span></td>
+          <td class="num up">+${f1(t.gain)}</td>
+          <td class="num">${t.cost>0?'-':'+'}${f1(Math.abs(t.cost))}</td>
+        </tr>`).join('')}</tbody></table>
+        <p class="hint" style="margin-top:8px">Δ xP = tambahan poin proyeksi selama ${S.horizon} GW, sudah memperhitungkan dana di bank dan batas 3 pemain per klub. Satu hit (−4) baru layak kalau Δ xP jelas di atas 4.</p>`
+        : `<p class="hint" style="margin-top:8px">Tidak ada transfer yang menaikkan proyeksi dengan dana saat ini.</p>`)
+        : `<p class="hint" style="margin-top:8px">Isi skuad dulu.</p>`}
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">Differential</div>
+      <label class="row" style="gap:7px; margin-top:8px; font-size:12.5px">Dimiliki maksimal
+        <input type="range" id="own" min="1" max="25" value="${TL.maxOwn}" style="width:110px"><b class="mono">${TL.maxOwn}%</b></label>
+      <table style="margin-top:8px">
+        <thead><tr><th class="l">Pemain</th><th>Harga</th><th>xP ${S.horizon}GW</th><th>Dimiliki</th></tr></thead>
+        <tbody>${diffs.map(d=>`<tr data-pid="${d.p.id}">
+          <td class="l"><span class="posbadge">${POS[d.p.pos]}</span> <span class="pname">${esc(d.p.name)}</span> <span class="tteam">${TEAMS[d.p.team].short}</span></td>
+          <td class="num">${f1(d.p.price)}</td><td class="num"><b>${f1(d.xp)}</b></td><td class="num">${f1(d.p.sel)}%</td>
+        </tr>`).join('')}</tbody></table>
+    </div>
+
+    <div class="card pad">
+      <div class="eyebrow">Nilai terbaik · xP per £m</div>
+      <table style="margin-top:8px">
+        <thead><tr><th class="l">Pemain</th><th>Harga</th><th>xP ${S.horizon}GW</th><th>per £m</th></tr></thead>
+        <tbody>${value.map(d=>`<tr data-pid="${d.p.id}">
+          <td class="l"><span class="posbadge">${POS[d.p.pos]}</span> <span class="pname">${esc(d.p.name)}</span> <span class="tteam">${TEAMS[d.p.team].short}</span></td>
+          <td class="num">${f1(d.p.price)}</td><td class="num">${f1(d.xp)}</td><td class="num"><b>${f2(d.v)}</b></td>
+        </tr>`).join('')}</tbody></table>
+    </div>
+  </div>`;
+  el.querySelectorAll('tr[data-pid]').forEach(tr=>tr.addEventListener('click', ()=>openDrawer(+tr.dataset.pid)));
+  const o = el.querySelector('#own'); if(o) o.addEventListener('input', e=>{ TL.maxOwn=+e.target.value; renderTools(); });
+}
+function transferIdeas(){
+  const sq = squad(); if(!sq.length) return [];
+  const b = bank();
+  const pool = D.players.filter(p=>p.avail>0.4 && p.xmins>20 && !S.picks.includes(p.id));
+  const out = [];
+  for(const o of sq){
+    const room = b + o.price;
+    const teamCntWithout = tc => squad().filter(p=>p.team===tc && p.id!==o.id).length;
+    let best = null;
+    for(const c of pool){
+      if(c.pos!==o.pos || c.price>room+1e-9) continue;
+      if(teamCntWithout(c.team) >= 3) continue;
+      const gain = xpH(c) - xpH(o);
+      if(gain > 0 && (!best || gain > best.gain)) best = {out:o, in:c, gain, cost:c.price-o.price};
+    }
+    if(best) out.push(best);
+  }
+  return out.sort((a,b)=>b.gain-a.gain).slice(0,8);
+}
+</script>
+<script>
+/* ============================ player drawer ============================ */
+function openDrawer(id){
+  const p = P[id]; if(!p) return;
+  const t = TEAMS[p.team], m = minutesOf(p);
+  const fl = fixturesOf(p.team, GW0);
+  const c = fl.length ? xpFixture(p, fl[0], m) : null;
+  let parts = c ? [
+    ['Tampil', c.app, 'var(--s1)'],
+    ['Gol & asis', c.att, 'var(--s2)'],
+    ['Clean sheet', Math.max(0,c.cs), 'var(--s3)'],
+    ['Bonus', c.bon, 'var(--s4)'],
+    ['Aksi bertahan', c.dc, 'var(--s5)'],
+  ] : [];
+  if(c && p.pos===1) parts.push(['Penyelamatan', c.sv, 'var(--s6)']);
+  parts = parts.filter(x => x[1] >= 0.005);
+  const pos = parts.reduce((s,x)=>s+Math.max(0,x[1]),0) || 1;
+  const si = statusInfo(p);
+  const runs = []; for(let g=GW0; g<GW0+8 && g<=LASTGW; g++) runs.push({g, fl:fixturesOf(p.team,g), xp:xpGW(p,g)});
+  const mxr = Math.max(...runs.map(r=>r.xp), 0.5);
+  const setp = [];
+  if(p.pen_order) setp.push(`penalti #${p.pen_order}`);
+  if(p.fk_order) setp.push(`tendangan bebas #${p.fk_order}`);
+  if(p.ck_order) setp.push(`sepak pojok #${p.ck_order}`);
+
+  const dr = document.getElementById('drawer');
+  dr.innerHTML = `
+  <div class="dhd">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <h2 style="font-size:20px">${esc(p.name)}</h2>
+        <div class="hint">${esc(p.full)} · ${esc(t.name)} · ${POS[p.pos]} · ${money(p.price)}</div>
+      </div>
+      <button class="btn sm" id="dclose">Tutup ✕</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      ${S.picks.includes(p.id)
+        ? `<button class="btn sm" id="drm">Hapus dari skuad</button>`
+        : `<button class="btn primary sm" id="dadd">Tambahkan ke skuad</button>`}
+      ${S.picks.includes(p.id)?`<button class="btn sm" id="dcap">${S.cap===p.id?'Batalkan kapten':'Jadikan kapten'}</button>`:''}
+      ${setp.length?`<span class="chip">${setp.join(' · ')}</span>`:''}
+    </div>
+  </div>
+  <div class="dbody grid" style="gap:18px">
+    ${si?`<div class="alert ${si.tone==='crit'?'c':'w'}"><span>⚑</span><div><b>${si.label}</b>${si.chance!=null?` — peluang main ${si.chance}%`:''}${si.news?`<br>${esc(si.news)}`:''}</div></div>`:''}
+
+    <div>
+      <div class="eyebrow">Proyeksi GW${GW0}${fl.length>1?` (${fl.length} laga)`:''}</div>
+      <div class="row" style="align-items:baseline; gap:8px; margin-top:2px">
+        <span class="num" style="font-size:30px; font-family:Archivo; font-weight:700">${f2(xpNext(p))}</span>
+        <span class="hint">poin proyeksi · ${fl.length?fl.map(f=>`${TEAMS[f.opp].short} ${f.h?'(kandang)':'(tandang)'}`).join(', '):'blank gameweek'}</span>
+      </div>
+      ${c?`<div class="stack" style="margin-top:10px">
+        ${parts.map(x=>`<i style="width:${Math.max(0,x[1])/pos*100}%; background:${x[2]}"></i>`).join('')}
+      </div>
+      <div class="slegend">${parts.map(x=>`<span><b style="background:${x[2]}"></b>${x[0]} <span class="num">${f2(x[1])}</span></span>`).join('')}
+      ${c.gc<-0.01?`<span><b style="background:var(--line-2)"></b>Kebobolan <span class="num">${f2(c.gc)}</span></span>`:''}
+      ${c.card<-0.01?`<span><b style="background:var(--line-2)"></b>Kartu <span class="num">${f2(c.card)}</span></span>`:''}</div>`:''}
+    </div>
+
+    <div>
+      <div class="eyebrow">Menit bermain</div>
+      <div class="kv" style="margin-top:8px">
+        <div class="b"><div class="k">Proyeksi menit</div><div class="v">${Math.round(m.xm)}</div><div class="s">${S.ovr[p.id]!=null?'diatur manual':'model'}</div></div>
+        <div class="b"><div class="k">Peluang start</div><div class="v">${Math.round(m.ps*100)}%</div></div>
+        <div class="b"><div class="k">Peluang 60+</div><div class="v">${Math.round(m.p60*100)}%</div></div>
+      </div>
+      <div class="row" style="margin-top:9px; gap:8px">
+        <span class="hint">Ubah manual kalau kamu tahu kabar terbaru:</span>
+        <input type="number" id="ovr" min="0" max="90" step="5" value="${S.ovr[p.id]!=null?S.ovr[p.id]:''}" placeholder="menit" style="width:84px">
+        <button class="btn sm" id="ovrset">Simpan</button>
+        ${S.ovr[p.id]!=null?`<button class="btn sm" id="ovrclr">Kembali ke model</button>`:''}
+      </div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Proyeksi 8 gameweek</div>
+      <div class="sparks" style="margin-top:8px; height:52px">
+        ${runs.map(r=>`<i style="height:${Math.max(4,r.xp/mxr*100)}%" title="GW${r.g}: ${f2(r.xp)}"></i>`).join('')}
+      </div>
+      <div class="row" style="justify-content:space-between; margin-top:4px">
+        ${runs.map(r=>`<span class="mono" style="font-size:9px; color:var(--ink-3); text-align:center; flex:1">${r.fl.length?r.fl.map(f=>TEAMS[f.opp].short).join('/'):'–'}<br>${r.g}</span>`).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Musim ini (setelah GW${D.meta.last_gw})</div>
+      <div class="kv" style="margin-top:8px">
+        ${kvb('Poin', p.pts)}${kvb('PPM', f1(p.ppg))}${kvb('Menit', p.mins)}${kvb('Start', p.starts)}
+        ${kvb('Gol', p.g)}${kvb('Asis', p.a)}${kvb('xG', f2(p.xg))}${kvb('xA', f2(p.xa))}
+        ${kvb('Bonus', p.bonus)}${kvb('BPS', p.bps)}${kvb('Dimiliki', f1(p.sel)+'%')}${kvb('Δ harga', (p.cost_change>0?'+':'')+f1(p.cost_change))}
+      </div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Underlying per 90 menit (model, gabungan musim ini + musim lalu)</div>
+      <div class="kv" style="margin-top:8px">
+        ${kvb('xG/90', f2(p.xg90))}${kvb('xA/90', f2(p.xa90))}${kvb('Tembakan/90', f2(p.sh90))}${kvb('On target/90', f2(p.sot90))}
+        ${kvb('Peluang dibuat/90', f2(p.cc90))}${kvb('Sentuh kotak lawan/90', f2(p.tob90))}
+        ${kvb('Aksi bertahan/90', f1(p.dc90))}${kvb('Peluang poin AB', Math.round(p.dc_rate*100)+'%')}
+        ${p.pos===1?kvb('Save/90', f2(p.sv90)):''}${kvb('Bonus/90', f2(p.bonus90))}
+      </div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Musim 2025/26 ${p.h_team && p.h_team!==p.team ? '· klub lain' : ''}</div>
+      ${p.h_mins ? `<div class="kv" style="margin-top:8px">
+        ${kvb('Poin', p.h_pts)}${kvb('Menit', p.h_mins)}${kvb('Start', p.h_starts)}
+        ${kvb('Gol', p.h_g)}${kvb('Asis', p.h_a)}${kvb('xG', f1(p.h_xg))}${kvb('xA', f1(p.h_xa))}
+        ${kvb('Tembakan', p.h_shots)}${kvb('Peluang dibuat', p.h_cc)}${kvb('Sentuh kotak', p.h_tob)}
+        ${kvb('Clean sheet', p.h_cs)}${kvb('Bonus', p.h_bonus)}
+      </div>` : `<p class="hint" style="margin-top:6px">Tidak ada menit bermain di Premier League musim lalu — proyeksi bersandar pada harga, posisi, dan menit musim ini.</p>`}
+    </div>
+  </div>`;
+  document.getElementById('scrim').classList.add('on');
+  dr.classList.add('on');
+  dr.querySelector('#dclose').addEventListener('click', closeDrawer);
+  const a = dr.querySelector('#dadd'); if(a) a.addEventListener('click', ()=>{ if(addPlayer(p)) openDrawer(id); });
+  const r = dr.querySelector('#drm'); if(r) r.addEventListener('click', ()=>{ removePlayer(id); openDrawer(id); });
+  const cp = dr.querySelector('#dcap'); if(cp) cp.addEventListener('click', ()=>{ S.cap = S.cap===id?null:id; save(); renderAll(); openDrawer(id); });
+  const os = dr.querySelector('#ovrset'); if(os) os.addEventListener('click', ()=>{
+    const v = dr.querySelector('#ovr').value;
+    if(v==='') { delete S.ovr[id]; } else { S.ovr[id] = Math.max(0, Math.min(90, +v)); }
+    save(); renderAll(); openDrawer(id);
+  });
+  const oc = dr.querySelector('#ovrclr'); if(oc) oc.addEventListener('click', ()=>{ delete S.ovr[id]; save(); renderAll(); openDrawer(id); });
+}
+const kvb = (k,v) => `<div class="b"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+function closeDrawer(){ document.getElementById('drawer').classList.remove('on'); document.getElementById('scrim').classList.remove('on'); }
+document.getElementById('scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+
+/* ============================ tab: model ============================ */
+function renderModel(){
+  document.getElementById('tab-model').innerHTML = `
+  <div class="sect-h"><h2>Cara model bekerja</h2><p>Supaya kamu tahu kapan angkanya bisa dipercaya — dan kapan tidak.</p></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <div class="card pad">
+      <h3 style="font-size:14px">1 · Menit bermain</h3>
+      <p class="hint" style="margin-top:6px">Peluang start diperkirakan dari start musim ini, start musim lalu, dan harga pemain (harga adalah petunjuk status di skuad). Hasilnya dinormalkan per klub supaya total menit satu tim tepat 11 × 90 per laga — tanpa ini, model akan mengarang menit yang tidak ada.</p>
+      <p class="hint">Status cedera/suspensi dan “peluang bermain %” resmi FPL dipakai sebagai pengali langsung.</p>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:14px">2 · Kualitas pemain</h3>
+      <p class="hint" style="margin-top:6px">xG dan xA per 90 menit digabung dari musim ini dan musim lalu (musim lalu diberi bobot 0,75), lalu ditarik ke rata-rata posisinya sebanyak sampel yang kurang. Proyeksi gol memakai 75% xG + 25% gol nyata; asis 70% xA + 30% asis nyata — angka underlying lebih stabil, tapi penyelesaian akhir tetap punya bobot.</p>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:14px">3 · Kekuatan tim &amp; lawan</h3>
+      <p class="hint" style="margin-top:6px">Setiap klub punya indeks serang dan bertahan hasil fitting terhadap seluruh laga Premier League 25/26 dan musim ini, dengan xG (75%) + gol (25%) sebagai bahan. Rating Elo dipakai sebagai prior — inilah cara tim promosi tetap dapat estimasi yang masuk akal.</p>
+      <p class="hint">xG satu laga = rata-rata liga (kandang ${f2(D.meta.mu_home)} / tandang ${f2(D.meta.mu_away)}) × indeks serang × indeks bertahan lawan.</p>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:14px">4 · Poin</h3>
+      <p class="hint" style="margin-top:6px">Poin tampil, gol, asis, clean sheet (peluang Poisson dari xGC laga itu), potongan kebobolan, penyelamatan kiper, bonus (dari laju bonus historis), aksi bertahan (peluang menembus ambang 10/12), dan kartu — dijumlahkan per laga, lalu per gameweek. Double gameweek dijumlah, blank bernilai nol.</p>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:14px">Kalibrasi</h3>
+      <p class="hint" style="margin-top:6px">Total proyeksi seluruh pemain untuk GW${GW0} adalah <b class="num">${f1(D.players.reduce((s,p)=>s+xpNext(p),0))}</b> poin. Sebagai pembanding, total poin nyata yang dibagikan di GW${D.meta.last_gw} adalah <b class="num">${D.meta.last_gw_total_points}</b>. Total proyeksi menit bermain juga dikunci ke <b class="num">19.800</b> menit per gameweek — persis 20 tim × 11 pemain × 90 menit.</p>
+    </div>
+    <div class="card pad">
+      <h3 style="font-size:14px">Yang tidak diketahui model</h3>
+      <p class="hint" style="margin-top:6px">Konferensi pers dan bocoran susunan pemain, kelelahan akibat kompetisi Eropa, perubahan pelatih, dan pergantian eksekutor bola mati yang belum terdaftar di FPL. Untuk itulah ada kolom “ubah manual” di menit bermain tiap pemain.</p>
+      <p class="hint">Baru ${D.meta.last_gw} gameweek yang dimainkan musim ini, jadi sebagian besar sinyal masih berasal dari musim lalu. Ketidakpastian akan turun cepat setelah GW5–6.</p>
+    </div>
+  </div>`;
+}
+
+/* ============================ shell ============================ */
+function renderHeader(){
+  document.getElementById('seasonlbl').textContent = 'Premier League ' + D.meta.season;
+  document.getElementById('hgw').textContent = 'GW' + GW0;
+  const WIB = {timeZone:'Asia/Jakarta'};
+  const dl = new Date(D.meta.next_deadline);
+  const hrs = (dl - Date.now()) / 36e5;
+  const left = hrs < 0 ? 'sudah lewat' : (hrs < 48 ? `${Math.round(hrs)} jam lagi` : `${Math.round(hrs/24)} hari lagi`);
+  document.getElementById('hdl').textContent =
+    dl.toLocaleString('id-ID', {...WIB, day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + ' WIB';
+  document.getElementById('hdl').title = left;
+  document.getElementById('hdlsub').textContent = left;
+  document.getElementById('hval').textContent = f1(cost());
+  document.getElementById('hbank').textContent = f1(bank());
+  const sq = squad();
+  const xi = sq.length>=11 ? bestXI(sq) : null;
+  const capP = S.cap?P[S.cap]:null;
+  const tot = xi ? xi.xi.reduce((s,p)=>s+xpNext(p),0) + (capP && xi.xi.includes(capP) ? xpNext(capP) : 0) : 0;
+  document.getElementById('hxp').textContent = xi ? f1(tot) : '–';
+  const gen = new Date(D.meta.generated);
+  document.getElementById('footmeta').innerHTML =
+    `Data diambil ${gen.toLocaleString('id-ID',{timeZone:'Asia/Jakarta', dateStyle:'long', timeStyle:'short'})} WIB — snapshot setelah GW${D.meta.last_gw}, sebelum deadline GW${GW0}. Halaman ini menyimpan salinan datanya sendiri, jadi angka tidak berubah sampai halaman diperbarui.<br>
+     Sumber: API resmi Fantasy Premier League (harga, poin, kepemilikan, transfer, status cedera, xG/xA), statistik laga gaya Opta per pemain (tembakan, peluang emas, sentuhan di kotak, aksi bertahan), rating Elo klub, dan daftar jadwal resmi FPL. Skuadmu tersimpan hanya di browser ini.`;
+}
+const TABS = {squad:renderSquad, players:renderPlayers, fixtures:renderFixtures, teams:renderTeams, tools:renderTools, model:renderModel};
+let TAB = 'squad';
+function renderAll(){
+  renderHeader();
+  TABS[TAB]();
+}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click', ()=>{
+  TAB = b.dataset.tab;
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.setAttribute('aria-selected', x.dataset.tab===TAB));
+  document.querySelectorAll('.tabpanel').forEach(x=>x.hidden = x.id !== 'tab-'+TAB);
+  renderAll();
+  window.scrollTo({top:0, behavior:'instant'});
+}));
+document.getElementById('themebtn').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : (cur === 'light' ? null : 'dark');
+  if(next) document.documentElement.setAttribute('data-theme', next);
+  else document.documentElement.removeAttribute('data-theme');
+});
+renderAll();
+</script>

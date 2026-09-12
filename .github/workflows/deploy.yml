@@ -1,0 +1,70 @@
+name: Refresh data & deploy
+
+# Keeps Kickoff Lab's numbers current with no manual steps:
+#   1. Pull the latest FPL / Opta-style / fixture data (scripts/fetch_data.py)
+#   2. Rebuild the model + dataset (scripts/build_data.py)
+#   3. Rebuild the page around it (scripts/build_page.py)
+#   4. Publish dist/ to GitHub Pages
+#
+# Runs twice a day, shortly after the upstream data mirror's own refresh
+# (07:30 / 17:30 UTC), plus on every push to main and on-demand.
+on:
+  schedule:
+    - cron: '0 8 * * *'
+    - cron: '0 18 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'site/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch latest FPL data
+        run: python scripts/fetch_data.py --out data/raw
+
+      - name: Build dataset
+        run: python scripts/build_data.py --raw data/raw --out dist/fpl_data.json
+
+      - name: Build page
+        run: python scripts/build_page.py --template site/template.html --data dist/fpl_data.json --out dist/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
