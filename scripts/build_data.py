@@ -15,7 +15,11 @@ import argparse, pandas as pd, numpy as np, json, glob, os, math, datetime as dt
 ap = argparse.ArgumentParser()
 ap.add_argument('--raw', default='data/raw')
 ap.add_argument('--out', default='dist/fpl_data.json')
+ap.add_argument('--no-prev', action='store_true',
+                help='build the model from this season only (no last-season matches, '
+                     'player history, Elo prior or last-season positional priors)')
 args = ap.parse_args()
+USE_PREV = not args.no_prev
 
 RAW = args.raw
 OUT = args.out
@@ -25,7 +29,8 @@ P = lambda f: os.path.join(RAW, f)
 with open(P('season.txt')) as fh:
     THIS_SEASON, LAST_SEASON, _ = [l.strip() for l in fh.readlines()]
 SEASON_LABEL = THIS_SEASON.replace('-', '/')[:4] + '/' + THIS_SEASON[-2:]  # '2026-2027' -> '2026/27'
-print(f'Building for season {THIS_SEASON} (previous: {LAST_SEASON})')
+print(f'Building for season {THIS_SEASON} (previous: {LAST_SEASON})'
+      f'{"" if USE_PREV else "  [this season only - last season ignored]"}')
 
 # ---------------------------------------------------------------- load
 players   = pd.read_csv(P('cur/players.csv'))
@@ -104,10 +109,15 @@ def match_rows(mdf, weight_base, is_prev_season):
         rows.append(dict(att=int(a), dfn=int(h), venue='A', val=float(av), w=w))
     return rows
 
-obs = match_rows(m25, 1.0, True) + match_rows(m26, 5.0, False)
-obs = pd.DataFrame(obs)
-mu_H = np.average(obs[obs.venue == 'H'].val, weights=obs[obs.venue == 'H'].w)
-mu_A = np.average(obs[obs.venue == 'A'].val, weights=obs[obs.venue == 'A'].w)
+obs = (match_rows(m25, 1.0, True) if USE_PREV else []) + match_rows(m26, 5.0, False)
+obs = pd.DataFrame(obs, columns=['att', 'dfn', 'venue', 'val', 'w'])
+if obs.empty:
+    # this-season-only mode before any match has been played: nothing to fit,
+    # every club starts level at the long-run league scoring rates
+    mu_H, mu_A = 1.55, 1.25
+else:
+    mu_H = np.average(obs[obs.venue == 'H'].val, weights=obs[obs.venue == 'H'].w)
+    mu_A = np.average(obs[obs.venue == 'A'].val, weights=obs[obs.venue == 'A'].w)
 MU = {'H': mu_H, 'A': mu_A}
 print(f'League baseline expected goals  home={mu_H:.2f}  away={mu_A:.2f}')
 
@@ -133,7 +143,7 @@ if elo_sd == 0:
     elo_sd = 1.0
 
 # relegated clubs still appear as last season's opponents: fit them too, report only current clubs
-ALL_CODES = sorted(set(obs.att) | set(obs.dfn) | set(TEAM_CODES))
+ALL_CODES = sorted(set(obs.att.astype(int)) | set(obs.dfn.astype(int)) | set(TEAM_CODES))
 ATT = {c: 1.0 for c in ALL_CODES}
 DEF = {c: 1.0 for c in ALL_CODES}
 
@@ -164,10 +174,16 @@ for it in range(120):
 # fit log(rating) ~ elo on current clubs with a real sample, then shrink everyone toward that prior
 games_played = {c: obs[obs.att == c].w.sum() for c in ALL_CODES}
 est = [c for c in TEAM_CODES if games_played[c] > 8]
-x = np.array([(elo[c] - elo_mean) / elo_sd for c in est])
-ba = np.polyfit(x, np.log([ATT[c] for c in est]), 1)
-bd = np.polyfit(x, np.log([DEF[c] for c in est]), 1)
-print(f'Elo->attack slope {ba[0]:+.3f}, Elo->defence slope {bd[0]:+.3f} (fit on {len(est)} clubs)')
+if USE_PREV and len(est) >= 5:
+    x = np.array([(elo[c] - elo_mean) / elo_sd for c in est])
+    ba = np.polyfit(x, np.log([ATT[c] for c in est]), 1)
+    bd = np.polyfit(x, np.log([DEF[c] for c in est]), 1)
+    print(f'Elo->attack slope {ba[0]:+.3f}, Elo->defence slope {bd[0]:+.3f} (fit on {len(est)} clubs)')
+else:
+    # Elo is a long-run rating built largely on previous seasons, so the
+    # this-season-only build shrinks every club toward the league average instead
+    ba = bd = np.array([0.0, 0.0])
+    print('team prior: league average (no Elo)')
 
 PRIOR_W = 9.0   # equivalent games of Elo prior
 ATTf, DEFf = dict(ATT), dict(DEF)
@@ -287,6 +303,24 @@ if not pms26.empty:
     )
     apps26 = pms26[pms26.minutes_played > 0].groupby('player_id').size()
 else:
+    agg26 = None  # filled below
+
+# This season's Opta-style match logs currently ship with an empty
+# `defensive_contributions` column, so defensive contributions are taken from
+# the official FPL totals instead. playerstats.csv holds one cumulative
+# snapshot per gameweek, so differencing consecutive snapshots recovers each
+# player's per-gameweek DC and minutes — a real match log for the DC hit-rate.
+dc_hits26, dc_tot26 = {}, {}
+if 'gw' in pstats.columns and 'defensive_contribution' in pstats.columns:
+    _h = pstats[['id', 'gw', 'minutes', 'defensive_contribution']].sort_values(['id', 'gw'])
+    _h['dmin'] = _h.groupby('id').minutes.diff().fillna(_h.minutes)
+    _h['ddc'] = _h.groupby('id').defensive_contribution.diff().fillna(_h.defensive_contribution)
+    for pid, g in _h[_h.dmin >= 55].groupby('id'):
+        dc_hits26[pid] = (g.ddc.values.astype(float), len(g))
+    dc_tot26 = _h.groupby('id').defensive_contribution.last().astype(float).to_dict()
+if agg26 is not None and not agg26.empty:
+    agg26['dc'] = [dc_tot26.get(i, v) for i, v in zip(agg26.index, agg26['dc'])]
+if agg26 is None:
     agg26 = pd.DataFrame(columns=['sq', 'mins', 'xg', 'xa', 'xgot', 'shots', 'sot', 'bcm', 'cc', 'tob',
                                    'touches', 'f3p', 'drib', 'tkl', 'intc', 'clr', 'blk', 'rec', 'dc',
                                    'saves', 'gp', 'goals', 'assists', 'pens'])
@@ -308,6 +342,10 @@ base = players.join(pstats[[c for c in pstats.columns if c not in ('web_name', '
 base['pos'] = base.position.map(POSMAP)
 
 def hist(pid_now, pcode):
+    if not USE_PREV:
+        # this-season-only build: no history at all, except that the
+        # defensive-contribution hit rate is read from this season's match logs
+        return {'dclog': dc_hits26.get(pid_now, (np.array([]), 0))}
     pid25 = code25.get(pcode)
     h = {}
     if pid25 is not None and pid25 in agg25.index:
@@ -344,10 +382,28 @@ for pos in (1, 2, 3, 4):
     prior[pos] = {k: float(sub[k].sum() / tm) if tm > 0 else 0.0
                   for k in ['xg', 'xa', 'shots', 'sot', 'cc', 'tob', 'dc', 'saves', 'goals', 'assists']}
     prior[pos]['n'] = len(sub)
+
+if not USE_PREV and not agg26.empty:
+    # this-season-only build: positional averages from this season's players
+    pos_of = players.position.map(POSMAP)          # players is indexed by player_id here
+    min_mins = max(90.0, 60.0 * GWS_PLAYED)
+    for pos in (1, 2, 3, 4):
+        ids = [i for i in agg26.index if pos_of.get(i) == pos]
+        sub = agg26.loc[ids]
+        sub = sub[sub.mins >= min_mins]
+        tm = sub.mins.sum() / 90.0
+        if tm > 0:
+            prior[pos] = {k: float(sub[k].sum() / tm)
+                          for k in ['xg', 'xa', 'shots', 'sot', 'cc', 'tob', 'dc', 'saves', 'goals', 'assists']}
+            prior[pos]['n'] = len(sub)
 print('positional per-90 priors:', {POSNAME[k]: {kk: round(vv, 3) for kk, vv in v.items()} for k, v in prior.items()})
 
 # bonus / cards priors from last season season-totals
 bp = ps25_38[ps25_38.minutes >= 450]
+if not USE_PREV:
+    bp_cur = pstats[pstats.minutes >= max(90.0, 60.0 * GWS_PLAYED)]
+    if bp_cur.minutes.sum() > 0:
+        bp = bp_cur
 prior_bonus90 = float(bp.bonus.sum() / (bp.minutes.sum() / 90))
 prior_yc90 = float(bp.yellow_cards.sum() / (bp.minutes.sum() / 90))
 
@@ -614,6 +670,7 @@ payload = dict(
         last_gw=int(LAST_GW), next_gw=int(NEXT_GW),
         next_deadline=str(gwsum[gwsum.id == NEXT_GW].deadline_time.iloc[0]) if NEXT_GW <= 38 else '',
         season=SEASON_LABEL,
+        use_prev=USE_PREV,
         mu_home=round(mu_H, 3), mu_away=round(mu_A, 3),
         last_gw_total_points=int(pstats.event_points.sum()),
         xp_next_total=round(float(df.xp_next.sum()), 1),

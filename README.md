@@ -9,8 +9,14 @@ GitHub Actions, lalu di-deploy ke GitHub Pages.
 ```
 scripts/fetch_data.py   -> tarik data terbaru (FPL resmi, statistik gaya Opta, fixture)
 scripts/build_data.py   -> jalankan model (rating tim, xP, menit bermain, dst.) -> dist/fpl_data.json
-scripts/build_page.py   -> suntik data ke site/template.html -> dist/index.html
+scripts/build_data.py --no-prev -> model yang sama, hanya data musim ini -> dist/fpl_data_np.json
+scripts/build_page.py   -> suntik kedua data ke site/template.html -> dist/index.html
 ```
+
+Di bagian atas halaman ada tombol **Data musim lalu: Pakai / Abaikan**.
+"Pakai" menggabungkan musim ini dengan musim lalu (lebih stabil, terutama di
+awal musim); "Abaikan" hanya memakai musim ini (lebih cepat menangkap
+perubahan, tapi lebih acak). Pilihanmu tersimpan di browser bersama skuad.
 
 `.github/workflows/deploy.yml` menjalankan ketiga langkah itu setiap hari jam
 **08:00 dan 18:00 UTC** (mengikuti jadwal refresh sumber datanya), setiap ada
@@ -61,7 +67,8 @@ yang sedang berjalan tanpa tahun/GW yang di-hardcode di kode.
 pip install -r requirements.txt
 python scripts/fetch_data.py --out data/raw
 python scripts/build_data.py --raw data/raw --out dist/fpl_data.json
-python scripts/build_page.py --template site/template.html --data dist/fpl_data.json --out dist/index.html
+python scripts/build_data.py --raw data/raw --out dist/fpl_data_np.json --no-prev
+python scripts/build_page.py --template site/template.html --data dist/fpl_data.json --alt-data dist/fpl_data_np.json --out dist/index.html
 python -m http.server 8000 --directory dist   # buka http://localhost:8000
 ```
 

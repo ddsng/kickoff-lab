@@ -69,6 +69,11 @@ header{
 .hstat{display:flex; flex-direction:column; gap:1px; min-width:0}
 .hstat .k{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3)}
 .hstat .v{font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600; font-variant-numeric:tabular-nums}
+.seg{display:inline-flex; border:1px solid var(--line-2); border-radius:8px; overflow:hidden; background:var(--surface-2)}
+.seg button{background:none; border:0; padding:3px 9px; font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; color:var(--ink-3); line-height:1.35}
+.seg button + button{border-left:1px solid var(--line-2)}
+.seg button[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink)}
+.seg button:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
 .themebtn{background:none; border:1px solid var(--line-2); border-radius:8px; padding:6px 9px; color:var(--ink-2); line-height:1}
 
 /* ---------- tabs ---------- */
@@ -200,6 +205,7 @@ tbody tr{cursor:pointer}
 .alert{border-radius:8px; padding:9px 12px; font-size:12.5px; display:flex; gap:8px; align-items:flex-start; border:1px solid}
 .alert.w{background:color-mix(in srgb,var(--warn) 12%,var(--surface)); border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
 .alert.c{background:color-mix(in srgb,var(--crit) 12%,var(--surface)); border-color:color-mix(in srgb,var(--crit) 40%,var(--line))}
+.alert.i{background:var(--accent-soft); border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
 .up{color:var(--good); font-weight:600}
 .dn{color:var(--crit); font-weight:600}
 .searchbox{position:relative; flex:1; min-width:200px}
@@ -228,6 +234,11 @@ footer a{color:var(--ink-2)}
       <div class="hstat"><span class="k">Nilai skuad</span><span class="v" id="hval">–</span></div>
       <div class="hstat"><span class="k">Sisa bank</span><span class="v" id="hbank">–</span></div>
       <div class="hstat"><span class="k">xP GW berikut</span><span class="v" id="hxp">–</span></div>
+      <div class="hstat" id="prevctl"><span class="k">Data musim lalu</span>
+        <span class="seg" role="group" aria-label="Pakai data musim lalu dalam model">
+          <button type="button" id="prevon" title="Model menggabungkan musim ini dengan musim lalu (lebih stabil di awal musim)">Pakai</button><button type="button" id="prevoff" title="Model hanya memakai data musim ini (lebih cepat menangkap perubahan, tapi lebih acak)">Abaikan</button>
+        </span>
+      </div>
       <button class="themebtn" id="themebtn" title="Ganti tema" aria-label="Ganti tema">◐</button>
     </div>
   </div>
@@ -271,13 +282,35 @@ const GW0 = D.meta.next_gw, LASTGW = 38;
 
 /* ============================ state ============================ */
 const LS = 'kickofflab.v1';
-let S = {picks:[], cap:null, vice:null, budget:100.0, horizon:6, ovr:{}, freeT:1};
+let S = {picks:[], cap:null, vice:null, budget:100.0, horizon:6, ovr:{}, freeT:1, usePrev:true};
 let CAN_SAVE = true;
 try{
   localStorage.setItem(LS + '.probe', '1'); localStorage.removeItem(LS + '.probe');
   const raw = localStorage.getItem(LS); if(raw) S = Object.assign(S, JSON.parse(raw));
 }catch(e){ CAN_SAVE = false; }
 function save(){ if(!CAN_SAVE) return; try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){ CAN_SAVE = false; } }
+
+/* ============================ model mode: with / without last season ============================ */
+/* The dataset carries two builds of the model. The main fields are the build
+   that blends in last season; `np` holds the this-season-only build. Switching
+   copies one set onto the live player/team objects, so every view that reads
+   p.xmins, p.ge90, TEAMS[c].fix … picks up the chosen model automatically. */
+const HAS_NP = !!(D.meta.has_np);
+const PM_FIELDS = ['xmins','p_start','p_play','p60','mstart','psub','p60s','xg90','xa90','ge90','ae90',
+                   'sh90','sot90','cc90','tob90','dc90','sv90','bonus90','yc90','dc_rate'];
+const TM_FIELDS = ['att','dfn','axg','axgc','fix'], MM_FIELDS = ['mu_home','mu_away'];
+const pick = (o, ks) => { const r = {}; ks.forEach(k => { if(k in o) r[k] = o[k]; }); return r; };
+D.players.forEach(p => p._full = pick(p, PM_FIELDS));
+D.teams.forEach(t => t._full = pick(t, TM_FIELDS));
+D.meta._full = pick(D.meta, MM_FIELDS);
+function usingPrev(){ return !HAS_NP || S.usePrev !== false; }
+function applyMode(){
+  const alt = !usingPrev();
+  D.players.forEach(p => Object.assign(p, alt && p.np ? p.np : p._full));
+  D.teams.forEach(t => Object.assign(t, alt && t.np ? t.np : t._full));
+  Object.assign(D.meta, alt && D.meta.np ? D.meta.np : D.meta._full);
+}
+applyMode();
 
 /* ============================ expected points engine ============================ */
 function minutesOf(p){
@@ -590,7 +623,7 @@ function wireSquad(xi){
 
 /** Squad as a portable code, so it can move between browsers or a local copy of this page. */
 function encodeSquad(){
-  const payload = {v:1, p:S.picks, c:S.cap, vc:S.vice, b:S.budget, h:S.horizon, o:S.ovr};
+  const payload = {v:1, p:S.picks, c:S.cap, vc:S.vice, b:S.budget, h:S.horizon, o:S.ovr, u:S.usePrev !== false ? 1 : 0};
   return 'KL1.' + btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/=+$/,'');
 }
 function decodeSquad(code){
@@ -606,6 +639,7 @@ function decodeSquad(code){
     S.vice = P[d.vc] ? d.vc : null;
     if(d.b) S.budget = +d.b;
     if(d.h) S.horizon = +d.h;
+    if(d.u !== undefined){ S.usePrev = !!d.u; applyMode(); }
     S.ovr = {};
     for(const k in (d.o||{})) if(P[k]) S.ovr[k] = d.o[k];
     save();
@@ -1152,21 +1186,28 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); })
 
 /* ============================ tab: model ============================ */
 function renderModel(){
+  const up = usingPrev();
   document.getElementById('tab-model').innerHTML = `
   <div class="sect-h"><h2>Cara model bekerja</h2><p>Supaya kamu tahu kapan angkanya bisa dipercaya — dan kapan tidak.</p></div>
+  ${HAS_NP ? `<div class="alert ${up ? 'i' : 'w'}" style="margin-bottom:12px"><span>${up ? '◑' : '◐'}</span><div>
+    <b>Mode sekarang: ${up ? 'musim ini + musim lalu' : 'hanya musim ini'}.</b>
+    Ganti lewat tombol <b>Data musim lalu</b> di bagian atas halaman. ${up
+      ? 'Musim lalu membuat angka lebih stabil, terutama untuk pemain dengan menit sedikit — tapi bisa lambat menangkap pemain yang performanya berubah, pindah klub, atau tim yang baru ganti pelatih.'
+      : 'Tanpa musim lalu, model cepat menangkap perubahan musim ini — tapi dengan sampel '+D.meta.last_gw+' gameweek, angkanya lebih acak: beberapa laga bagus atau buruk bisa terlihat seperti tren.'}
+  </div></div>` : ''}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
     <div class="card pad">
       <h3 style="font-size:14px">1 · Menit bermain</h3>
-      <p class="hint" style="margin-top:6px">Peluang start diperkirakan dari start musim ini, start musim lalu, dan harga pemain (harga adalah petunjuk status di skuad). Hasilnya dinormalkan per klub supaya total menit satu tim tepat 11 × 90 per laga — tanpa ini, model akan mengarang menit yang tidak ada.</p>
+      <p class="hint" style="margin-top:6px">Peluang start diperkirakan dari start musim ini${up ? ', start musim lalu,' : ''} dan harga pemain (harga adalah petunjuk status di skuad). Hasilnya dinormalkan per klub supaya total menit satu tim tepat 11 × 90 per laga — tanpa ini, model akan mengarang menit yang tidak ada.</p>
       <p class="hint">Status cedera/suspensi dan “peluang bermain %” resmi FPL dipakai sebagai pengali langsung.</p>
     </div>
     <div class="card pad">
       <h3 style="font-size:14px">2 · Kualitas pemain</h3>
-      <p class="hint" style="margin-top:6px">xG dan xA per 90 menit digabung dari musim ini dan musim lalu (musim lalu diberi bobot 0,75), lalu ditarik ke rata-rata posisinya sebanyak sampel yang kurang. Proyeksi gol memakai 75% xG + 25% gol nyata; asis 70% xA + 30% asis nyata — angka underlying lebih stabil, tapi penyelesaian akhir tetap punya bobot.</p>
+      <p class="hint" style="margin-top:6px">${up ? 'xG dan xA per 90 menit digabung dari musim ini dan musim lalu (musim lalu diberi bobot 0,75), lalu ditarik ke rata-rata posisinya sebanyak sampel yang kurang.' : 'xG dan xA per 90 menit hanya dari musim ini, lalu ditarik ke rata-rata posisinya (juga dihitung dari musim ini) sebanyak sampel yang kurang.'} Proyeksi gol memakai 75% xG + 25% gol nyata; asis 70% xA + 30% asis nyata — angka underlying lebih stabil, tapi penyelesaian akhir tetap punya bobot.</p>
     </div>
     <div class="card pad">
       <h3 style="font-size:14px">3 · Kekuatan tim &amp; lawan</h3>
-      <p class="hint" style="margin-top:6px">Setiap klub punya indeks serang dan bertahan hasil fitting terhadap seluruh laga Premier League 25/26 dan musim ini, dengan xG (75%) + gol (25%) sebagai bahan. Rating Elo dipakai sebagai prior — inilah cara tim promosi tetap dapat estimasi yang masuk akal.</p>
+      <p class="hint" style="margin-top:6px">${up ? 'Setiap klub punya indeks serang dan bertahan hasil fitting terhadap seluruh laga Premier League musim lalu dan musim ini, dengan xG (75%) + gol (25%) sebagai bahan. Rating Elo dipakai sebagai prior — inilah cara tim promosi tetap dapat estimasi yang masuk akal.' : 'Setiap klub punya indeks serang dan bertahan hasil fitting hanya terhadap laga musim ini, dengan xG (75%) + gol (25%) sebagai bahan, lalu ditarik ke rata-rata liga (bukan ke rating Elo, yang dibangun dari musim-musim sebelumnya).'}</p>
       <p class="hint">xG satu laga = rata-rata liga (kandang ${f2(D.meta.mu_home)} / tandang ${f2(D.meta.mu_away)}) × indeks serang × indeks bertahan lawan.</p>
     </div>
     <div class="card pad">
@@ -1180,7 +1221,7 @@ function renderModel(){
     <div class="card pad">
       <h3 style="font-size:14px">Yang tidak diketahui model</h3>
       <p class="hint" style="margin-top:6px">Konferensi pers dan bocoran susunan pemain, kelelahan akibat kompetisi Eropa, perubahan pelatih, dan pergantian eksekutor bola mati yang belum terdaftar di FPL. Untuk itulah ada kolom “ubah manual” di menit bermain tiap pemain.</p>
-      <p class="hint">Baru ${D.meta.last_gw} gameweek yang dimainkan musim ini, jadi sebagian besar sinyal masih berasal dari musim lalu. Ketidakpastian akan turun cepat setelah GW5–6.</p>
+      <p class="hint">${up ? (D.meta.last_gw < 10 ? `Baru ${D.meta.last_gw} gameweek yang dimainkan musim ini, jadi sebagian sinyal masih berasal dari musim lalu.` : `Sudah ${D.meta.last_gw} gameweek dimainkan, jadi musim ini kini mendominasi sinyalnya.`) : `Mode hanya-musim-ini memakai ${D.meta.last_gw} gameweek data; ketidakpastiannya turun seiring gameweek bertambah.`}</p>
     </div>
   </div>`;
 }
@@ -1204,6 +1245,10 @@ function renderHeader(){
   const capP = S.cap?P[S.cap]:null;
   const tot = xi ? xi.xi.reduce((s,p)=>s+xpNext(p),0) + (capP && xi.xi.includes(capP) ? xpNext(capP) : 0) : 0;
   document.getElementById('hxp').textContent = xi ? f1(tot) : '–';
+  const pc = document.getElementById('prevctl');
+  pc.hidden = !HAS_NP;
+  document.getElementById('prevon').setAttribute('aria-pressed', usingPrev());
+  document.getElementById('prevoff').setAttribute('aria-pressed', !usingPrev());
   const gen = new Date(D.meta.generated);
   document.getElementById('footmeta').innerHTML =
     `Data diambil ${gen.toLocaleString('id-ID',{timeZone:'Asia/Jakarta', dateStyle:'long', timeStyle:'short'})} WIB — snapshot setelah GW${D.meta.last_gw}, sebelum deadline GW${GW0}. Halaman ini menyimpan salinan datanya sendiri, jadi angka tidak berubah sampai halaman diperbarui.<br>
@@ -1222,6 +1267,13 @@ document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('clic
   renderAll();
   window.scrollTo({top:0, behavior:'instant'});
 }));
+function setPrev(on){
+  if(usingPrev() === on) return;
+  S.usePrev = on; save(); applyMode(); closeDrawer(); renderAll();
+  toast(on ? 'Model memakai musim ini + musim lalu' : 'Model hanya memakai data musim ini');
+}
+document.getElementById('prevon').addEventListener('click', ()=>setPrev(true));
+document.getElementById('prevoff').addEventListener('click', ()=>setPrev(false));
 document.getElementById('themebtn').addEventListener('click', ()=>{
   const cur = document.documentElement.getAttribute('data-theme');
   const next = cur === 'dark' ? 'light' : (cur === 'light' ? null : 'dark');

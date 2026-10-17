@@ -2,7 +2,8 @@ name: Refresh data & deploy
 
 # Keeps Kickoff Lab's numbers current with no manual steps:
 #   1. Pull the latest FPL / Opta-style / fixture data (scripts/fetch_data.py)
-#   2. Rebuild the model + dataset (scripts/build_data.py)
+#   2. Rebuild the model + dataset twice (scripts/build_data.py): once
+#      blending in last season, once with --no-prev (this season only)
 #   3. Rebuild the page around it (scripts/build_page.py)
 #   4. Publish dist/ to GitHub Pages
 #
@@ -47,11 +48,14 @@ jobs:
       - name: Fetch latest FPL data
         run: python scripts/fetch_data.py --out data/raw
 
-      - name: Build dataset
+      - name: Build dataset (this season + last season)
         run: python scripts/build_data.py --raw data/raw --out dist/fpl_data.json
 
+      - name: Build dataset (this season only)
+        run: python scripts/build_data.py --raw data/raw --out dist/fpl_data_np.json --no-prev
+
       - name: Build page
-        run: python scripts/build_page.py --template site/template.html --data dist/fpl_data.json --out dist/index.html
+        run: python scripts/build_page.py --template site/template.html --data dist/fpl_data.json --alt-data dist/fpl_data_np.json --out dist/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
